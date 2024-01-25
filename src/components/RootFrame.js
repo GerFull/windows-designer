@@ -1187,8 +1187,12 @@ function RootFrame(props) {
       setHeightCloset(200)
       setHeightClosetChange(1000)
       setLeftRectangels(leftRectangels.map(item => {
+        if (item.type !== 'frame') {
+          return { ...item, height: item.height + (200 - heightCloset) }
+        } else {
 
-        return { ...item, height: item.height + (200 - heightCloset) }
+        }
+
 
       }))
       setRightRectangels(RightRectangels.map(item => {
@@ -1255,6 +1259,7 @@ function RootFrame(props) {
 
         setLeftRectangels(leftRectangels.map(item => {
 
+
           return { ...item, height: item.height + ((lastFrame + 50) - heightCloset) }
 
         }))
@@ -1318,12 +1323,16 @@ function RootFrame(props) {
         }))
         setHeightCloset(heightClosetChange / 5)
         setLeftRectangels(leftRectangels.map(item => {
-
-          return { ...item, height: item.height + (heightClosetChange / 5 - heightCloset) }
+          if (item?.type !== 'frame'){
+            return { ...item, height: item.height + (heightClosetChange / 5 - heightCloset) }
+          } else return item
+          
 
         }))
         setRightRectangels(RightRectangels.map(item => {
-          return { ...item, height: item.height + (heightClosetChange / 5 - heightCloset) }
+          if (item?.type !== 'frame'){
+            return { ...item, height: item.height + (heightClosetChange / 5 - heightCloset) }
+          } else return item
         }))
 
         setMainBackRectabgles(mainBackRectangles.map(item => {

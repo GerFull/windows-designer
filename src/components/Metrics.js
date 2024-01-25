@@ -445,7 +445,7 @@ function HorizontalMetric({ x, y, width, itemSelect, Rectangels, verticalFrames,
       <Line points={[width, 0, width, METRIC_SIZE]} stroke="black" />
       <Label onClick={change && check} x={width / 2 - 25} y={METRIC_SIZE / 2 - 20}>
         <Tag fill="white" stroke="black" />
-        <Text text={(value * 5) + " mm"} padding={5} />
+        <Text text={(value * 5).toFixed(0) + " mm"} padding={5} />
       </Label>
     </Group>
   );
