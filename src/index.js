@@ -1,15 +1,18 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import { Provider } from "mobx-react";
-import createStore from "./store";
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
 import App from "./components/App";
+import './styles.css'
+import store from "./store";
 
-window.store = createStore();
 
-const rootElement = document.getElementById("root");
-ReactDOM.render(
-  <Provider store={window.store}>
-    <App />
-  </Provider>,
-  rootElement
+
+createRoot(
+  document.getElementById('root')
+).render(
+  <Provider store={store}>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </Provider>
 );

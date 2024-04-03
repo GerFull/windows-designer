@@ -1,34 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Group, Line, Arrow, Label, Text, Tag } from "react-konva";
-import { observer, inject } from "mobx-react";
+import { useSelector, useDispatch } from "react-redux";
+import { changeHorizontalFrames, changeVerticalFrames } from "../store/slice/mainRectangles";
+import { changeHorizontalLeftFrames } from "../store/slice/leftRectangles";
+import { changeHorizontalRightFrames } from "../store/slice/rightRectangles";
 
 const METRIC_SIZE = 25;
 const FRAME_SIZE = 3;
+
+
 
 // разбить на функции создание стрелок
 
 // добавить ограничения в рамках вертикальных и горизонтальных
 
-function VerticalMetric({ x, y, height, itemSelect, Rectangels, horizontalFrames, setRectangels,
-  setHorizontalFrames, change = true, heightShow, left = false, right = false,
-
-  horizontalLeftFrames,
-  setHorizontalLeftFrames,
-  leftRectangels,
-  setLeftRectangels,
-
-  horizontalRightFrames,
-  setHorizontalRightFrames,
-  RightRectangels,
-  setRightRectangels,
-
+function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, left = false, right = false,
   lineSize,
   type
 }) {
 
 
+
+
   const [value, setValue] = useState(0)
   const [valueCopy, setValueCopy] = useState(height * 5)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     setValue(height)
@@ -89,186 +85,43 @@ function VerticalMetric({ x, y, height, itemSelect, Rectangels, horizontalFrames
 
   const onBlurInput = (valueInput, containerDiv, wrap) => {
 
-    // console.log(itemSelect)
-
-    console.log(valueInput)
 
     if (left === false && right === false) {
-      const itemsDown = Rectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        (item.y === (itemSelect.y + itemSelect.height))
-      )
-      )
-
-      const itemsUp = Rectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        ((item.y + item.height) === itemSelect.y)
-      )
-      )
-
-
-
-
-      setRectangels(Rectangels.map(item => {
-        if (item.id === itemSelect.id) {
-          return { ...item, y: item.y + ((valueInput / 5) - value) }
-        }
-        else if (itemsUp.includes(item)) {
-          return { ...item, height: item.height + ((valueInput / 5) - value), }
-        }
-        else if (itemsDown.includes(item)) {
-          return { ...item, y: item.y + ((valueInput / 5) - value), height: item.height - ((valueInput / 5) - value), }
-        }
-        else {
-          return item
-        }
-      }))
-
-      setHorizontalFrames(horizontalFrames.map(item => {
-        if (item.id === itemSelect.id) {
-          return { ...item, y: item.y + ((valueInput / 5) - value) }
-        }
-        else {
-          return item
-        }
-      }))
-
+      dispatch(changeHorizontalFrames({ itemSelect, value, valueInput }))
       setValue((valueInput) / 5)
+
     } else if (left === true) {
       console.log('left')
-      const itemsDown = leftRectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        (item.y === (itemSelect.y + itemSelect.height))
-      )
-      )
 
-      const itemsUp = leftRectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        ((item.y + item.height) === itemSelect.y)
-      )
-      )
+      dispatch(changeHorizontalLeftFrames({ itemSelect, value, valueInput, heightShow }))
+
 
 
       if (heightShow !== undefined) {
-        setLeftRectangels(leftRectangels.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
-          }
-          else if (itemsUp.includes(item)) {
-            return { ...item, height: item.height + (((valueInput - 150) / 5) - value), }
-          }
-          else if (itemsDown.includes(item)) {
-            return { ...item, y: item.y + (((valueInput - 150) / 5) - value), height: item.height - (((valueInput - 150) / 5) - value), }
-          }
-          else {
-            return item
-          }
-        }))
 
-        setHorizontalLeftFrames(horizontalLeftFrames.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
-          }
-          else {
-            return item
-          }
-        }))
+
         setValue((valueInput - 150) / 5)
 
       } else {
-        setLeftRectangels(leftRectangels.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput) / 5) - value) }
-          }
-          else if (itemsUp.includes(item)) {
-            return { ...item, height: item.height + (((valueInput) / 5) - value), }
-          }
-          else if (itemsDown.includes(item)) {
-            return { ...item, y: item.y + (((valueInput) / 5) - value), height: item.height - (((valueInput) / 5) - value), }
-          }
-          else {
-            return item
-          }
-        }))
 
-        setHorizontalLeftFrames(horizontalLeftFrames.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput) / 5) - value) }
-          }
-          else {
-            return item
-          }
-        }))
         setValue((valueInput) / 5)
       }
 
 
 
     } else if (right === true) {
-      console.log('right')
-      const itemsDown = RightRectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        (item.y === (itemSelect.y + itemSelect.height))
-      )
-      )
 
-      const itemsUp = RightRectangels.filter(item => (
-        (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
-        ((item.y + item.height) === itemSelect.y)
-      )
-      )
+      console.log('right')
+      dispatch(changeHorizontalRightFrames({ itemSelect, value, valueInput, heightShow }))
+
 
 
       if (heightShow !== undefined) {
-        setRightRectangels(RightRectangels.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
-          }
-          else if (itemsUp.includes(item)) {
-            return { ...item, height: item.height + (((valueInput - 150) / 5) - value), }
-          }
-          else if (itemsDown.includes(item)) {
-            return { ...item, y: item.y + (((valueInput - 150) / 5) - value), height: item.height - (((valueInput - 150) / 5) - value), }
-          }
-          else {
-            return item
-          }
-        }))
 
-        setHorizontalRightFrames(horizontalRightFrames.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + ((valueInput - 150) / 5 - value) }
-          }
-          else {
-            return item
-          }
-        }))
         setValue((valueInput - 150) / 5)
       } else {
 
-        setRightRectangels(RightRectangels.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + (((valueInput) / 5) - value) }
-          }
-          else if (itemsUp.includes(item)) {
-            return { ...item, height: item.height + (((valueInput) / 5) - value), }
-          }
-          else if (itemsDown.includes(item)) {
-            return { ...item, y: item.y + (((valueInput) / 5) - value), height: item.height - (((valueInput) / 5) - value), }
-          }
-          else {
-            return item
-          }
-        }))
 
-        setHorizontalRightFrames(horizontalRightFrames.map(item => {
-          if (item.id === itemSelect.id) {
-            return { ...item, y: item.y + ((valueInput) / 5 - value) }
-          }
-          else {
-            return item
-          }
-        }))
         setValue((valueInput) / 5)
       }
 
@@ -321,11 +174,11 @@ function VerticalMetric({ x, y, height, itemSelect, Rectangels, horizontalFrames
 }
 
 
-function HorizontalMetric({ x, y, width, itemSelect, Rectangels, verticalFrames, setRectangels, setVerticalFrames, change = true, widthLeftWall }) {
+function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWall }) {
 
   const [value, setValue] = useState(0)
   const [valueCopy, setValueCopy] = useState(width * 5)
-
+  const dispatch = useDispatch()
 
   useEffect(() => {
     setValue(width)
@@ -385,42 +238,7 @@ function HorizontalMetric({ x, y, width, itemSelect, Rectangels, verticalFrames,
 
   const onBlurInput = (valueInput, containerDiv, wrap) => {
 
-
-    const itemsLeft = Rectangels.filter(item => (
-      (item.y >= itemSelect.y && ((item.y + item.height) <= (itemSelect.y + itemSelect.height))) &&
-      ((item.x + item.width) === (itemSelect.x + widthLeftWall))
-    )
-    )
-
-    const itemsRight = Rectangels.filter(item => (
-      (item.y >= itemSelect.y && ((item.y + item.height) <= (itemSelect.y + itemSelect.height))) &&
-      (item.x === ((itemSelect.x + widthLeftWall) + itemSelect.width))
-    )
-    )
-
-    setRectangels(Rectangels.map(item => {
-      if (item.id === itemSelect.id) {
-        return { ...item, x: item.x + ((valueInput / 5) - value) }
-      }
-      else if (itemsLeft.includes(item)) {
-        return { ...item, width: item.width + ((valueInput / 5) - value), }
-      }
-      else if (itemsRight.includes(item)) {
-        return { ...item, x: item.x + ((valueInput / 5) - value), width: item.width - ((valueInput / 5) - value), }
-      }
-      else {
-        return item
-      }
-    }))
-
-    setVerticalFrames(verticalFrames.map(item => {
-      if (item.id === itemSelect.id) {
-        return { ...item, x: item.x + ((valueInput / 5) - value) }
-      }
-      else {
-        return item
-      }
-    }))
+    dispatch(changeVerticalFrames({ itemSelect, value, valueInput, widthLeftWall }))
 
     containerDiv.removeChild(wrap);
 
@@ -457,18 +275,7 @@ function HorizontalMetric({ x, y, width, itemSelect, Rectangels, verticalFrames,
 function Metrics(props) {
 
   const { width, height,
-    verticalFrames,
-    setVerticalFrames,
-    horizontalFrames,
-    setHorizontalFrames,
-    Rectangels, setRectangels, widthLeftWall, widthRightWall,
-    horizontalLeftFrames,
-    setHorizontalLeftFrames,
-    horizontalRightFrames,
-    setHorizontalRightFrames,
-    leftRectangels,
-    setLeftRectangels,
-    RightRectangels,
+    widthLeftWall, widthRightWall,
     setRightRectangels,
     LeftWall,
     RightWall
@@ -481,11 +288,19 @@ function Metrics(props) {
   const [horizontalComponents, setHorizontalComponents] = useState([])
 
 
+  const { verticalFrames, horizontalFrames } = useSelector(store => store.mainRectangles)
+  const { horizontalLeftFrames, leftRectangels } = useSelector(store => store.leftRectangels)
+  const { horizontalRightFrames, RightRectangels } = useSelector(store => store.rightRectangels)
+
+
   function processSection() {
 
-    const sortedVertical = verticalFrames.sort((itme1, item2) => itme1['x'] > item2['x'] ? 1 : -1);
+    const copyVerticalFrames = [...verticalFrames]
+    const copyHorizontalFrames = [...horizontalFrames]
 
-    const sortedHorizontal = horizontalFrames.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
+    const sortedVertical = copyVerticalFrames.sort((itme1, item2) => itme1['x'] > item2['x'] ? 1 : -1);
+
+    const sortedHorizontal = copyHorizontalFrames.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
 
     const testArr = []
     const verticalArr = []
@@ -501,10 +316,7 @@ function Metrics(props) {
           y={0}
           width={sortedVertical[0].x}
           itemSelect={item}
-          Rectangels={Rectangels}
-          setRectangels={setRectangels}
           verticalFrames={verticalFrames}
-          setVerticalFrames={setVerticalFrames}
           widthLeftWall={widthLeftWall}
         />
           ,
@@ -530,10 +342,7 @@ function Metrics(props) {
             y={0}
             width={sortedVertical[0].x}
             itemSelect={item}
-            Rectangels={Rectangels}
-            setRectangels={setRectangels}
             verticalFrames={verticalFrames}
-            setVerticalFrames={setVerticalFrames}
             widthLeftWall={widthLeftWall}
           />)
         }
@@ -545,10 +354,7 @@ function Metrics(props) {
             y={0}
             width={item.x - sortedVertical[index - 1].x - FRAME_SIZE}
             itemSelect={item}
-            Rectangels={Rectangels}
-            setRectangels={setRectangels}
             verticalFrames={verticalFrames}
-            setVerticalFrames={setVerticalFrames}
             widthLeftWall={widthLeftWall}
           />)
         }
@@ -560,10 +366,7 @@ function Metrics(props) {
             y={0}
             width={item.x - sortedVertical[index - 1].x - FRAME_SIZE}
             itemSelect={item}
-            Rectangels={Rectangels}
-            setRectangels={setRectangels}
             verticalFrames={verticalFrames}
-            setVerticalFrames={setVerticalFrames}
             widthLeftWall={widthLeftWall}
           />,
             <HorizontalMetric
@@ -587,10 +390,10 @@ function Metrics(props) {
           y={0}
           height={item.y}
           itemSelect={item}
-          Rectangels={Rectangels}
+
           horizontalFrames={horizontalFrames}
-          setRectangels={setRectangels}
-          setHorizontalFrames={setHorizontalFrames}
+
+
           widthLeftWall={widthLeftWall}
           lineSize={-150}
           type={'up'}
@@ -618,10 +421,9 @@ function Metrics(props) {
             y={0}
             height={item.y}
             itemSelect={item}
-            Rectangels={Rectangels}
-            setRectangels={setRectangels}
+
             horizontalFrames={horizontalFrames}
-            setHorizontalFrames={setHorizontalFrames}
+
             widthLeftWall={widthLeftWall}
             lineSize={-150}
             type={'up'}
@@ -634,10 +436,9 @@ function Metrics(props) {
             y={sortedHorizontal[index - 1].y + FRAME_SIZE}
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
             itemSelect={item}
-            Rectangels={Rectangels}
+
             horizontalFrames={horizontalFrames}
-            setRectangels={setRectangels}
-            setHorizontalFrames={setHorizontalFrames}
+
             widthLeftWall={widthLeftWall}
           />)
         }
@@ -649,10 +450,10 @@ function Metrics(props) {
             y={sortedHorizontal[index - 1].y + FRAME_SIZE}
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
             itemSelect={item}
-            Rectangels={Rectangels}
+
             horizontalFrames={horizontalFrames}
-            setRectangels={setRectangels}
-            setHorizontalFrames={setHorizontalFrames}
+
+
             widthLeftWall={widthLeftWall}
           />,
             <VerticalMetric
@@ -683,7 +484,9 @@ function Metrics(props) {
 
   const creataeLeftArrow = () => {
 
-    const sortedHorizontal = horizontalLeftFrames.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
+    const horizontalLeftFramesCopy = [...horizontalLeftFrames]
+
+    const sortedHorizontal = horizontalLeftFramesCopy.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
 
     const verticalArr = []
 
@@ -698,10 +501,7 @@ function Metrics(props) {
           heightShow={item.y}
           itemSelect={item}
           widthLeftWall={widthLeftWall}
-          horizontalLeftFrames={horizontalLeftFrames}
-          setHorizontalLeftFrames={setHorizontalLeftFrames}
-          leftRectangels={leftRectangels}
-          setLeftRectangels={setLeftRectangels}
+
           left={true}
         />,
           <VerticalMetric
@@ -729,9 +529,8 @@ function Metrics(props) {
             itemSelect={item}
             widthLeftWall={widthLeftWall}
             horizontalLeftFrames={horizontalLeftFrames}
-            setHorizontalLeftFrames={setHorizontalLeftFrames}
-            leftRectangels={leftRectangels}
-            setLeftRectangels={setLeftRectangels}
+
+
             left={true}
           />)
         }
@@ -744,9 +543,9 @@ function Metrics(props) {
             itemSelect={item}
             widthLeftWall={widthLeftWall}
             horizontalLeftFrames={horizontalLeftFrames}
-            setHorizontalLeftFrames={setHorizontalLeftFrames}
-            leftRectangels={leftRectangels}
-            setLeftRectangels={setLeftRectangels}
+
+
+
             left={true}
           />)
         }
@@ -760,9 +559,9 @@ function Metrics(props) {
             itemSelect={item}
             widthLeftWall={widthLeftWall}
             horizontalLeftFrames={horizontalLeftFrames}
-            setHorizontalLeftFrames={setHorizontalLeftFrames}
-            leftRectangels={leftRectangels}
-            setLeftRectangels={setLeftRectangels}
+
+
+
             left={true}
           />,
             <VerticalMetric
@@ -784,7 +583,9 @@ function Metrics(props) {
 
   const creataeRightArrow = () => {
 
-    const sortedHorizontal = horizontalRightFrames.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
+    const horizontalRightFramesCopy = [...horizontalRightFrames]
+
+    const sortedHorizontal = horizontalRightFramesCopy.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
 
     const verticalArr = []
 
@@ -799,8 +600,6 @@ function Metrics(props) {
           heightShow={item.y}
           itemSelect={item}
           horizontalRightFrames={horizontalRightFrames}
-          setHorizontalRightFrames={setHorizontalRightFrames}
-          RightRectangels={RightRectangels}
           setRightRectangels={setRightRectangels}
 
           widthLeftWall={widthLeftWall}
@@ -831,9 +630,8 @@ function Metrics(props) {
             heightShow={item.y}
             itemSelect={item}
             horizontalRightFrames={horizontalRightFrames}
-            setHorizontalRightFrames={setHorizontalRightFrames}
-            RightRectangels={RightRectangels}
-            setRightRectangels={setRightRectangels}
+
+
             right={true}
             widthLeftWall={widthLeftWall}
           />)
@@ -846,9 +644,7 @@ function Metrics(props) {
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
             itemSelect={item}
             horizontalRightFrames={horizontalRightFrames}
-            setHorizontalRightFrames={setHorizontalRightFrames}
-            RightRectangels={RightRectangels}
-            setRightRectangels={setRightRectangels}
+
             right={true}
             widthLeftWall={widthLeftWall}
           />)
@@ -862,9 +658,8 @@ function Metrics(props) {
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
             itemSelect={item}
             horizontalRightFrames={horizontalRightFrames}
-            setHorizontalRightFrames={setHorizontalRightFrames}
-            RightRectangels={RightRectangels}
-            setRightRectangels={setRightRectangels}
+
+
             right={true}
             widthLeftWall={widthLeftWall}
           />,
@@ -890,7 +685,7 @@ function Metrics(props) {
   useEffect(() => {
     processSection()
 
-  }, [verticalFrames, horizontalFrames, width, height, Rectangels, widthLeftWall,
+  }, [verticalFrames, horizontalFrames, width, height, widthLeftWall,
     horizontalLeftFrames, horizontalRightFrames, leftRectangels, RightRectangels])
 
 
@@ -900,7 +695,7 @@ function Metrics(props) {
       x={100}>
       <VerticalMetric
         height={height}
-        x={-(60 + 100)}
+        x={LeftWall ? -(60 + 100) : -60}
         y={0}
         change={false}
         lineSize={160}
@@ -930,7 +725,7 @@ function Metrics(props) {
         />
       </Group>
       <Group x={-(25 + 100)}>{verticalLeftComponents}</Group>
-      <Group x={width + widthRightWall + (widthLeftWall - 100) + 50}>{verticalComponents}</Group>
+      <Group x={width + (RightWall ? widthRightWall : 0) + (widthLeftWall - 100) + 50}>{verticalComponents}</Group>
       <Group x={width + widthRightWall + (widthLeftWall - 100)}>{verticalRightComponents}</Group>
       <Group x={widthLeftWall - 100} y={height}>{horizontalComponents}</Group>
     </Group>
@@ -939,4 +734,4 @@ function Metrics(props) {
 
 
 
-export default inject("store")(observer(Metrics));
+export default Metrics

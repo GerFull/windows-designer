@@ -2,3 +2,13 @@
   font-family: sans-serif;
   text-align: center;
 }
+
+
+a:active, /* активная/посещенная ссылка */
+a:hover,  /* при наведении */
+a {
+  text-decoration: none;
+  color: #666;
+}
+
+

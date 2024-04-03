@@ -1,13 +1,13 @@
-import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import Routes from '../pages/routes';
 
-import RootFrame from "./RootFrame";
 
 function App() {
   return (
-    <div>
-      <RootFrame />
-    </div>
-  );
+    <BrowserRouter>
+      <Routes />
+    </BrowserRouter>
+  )
 }
 
 export default App;
