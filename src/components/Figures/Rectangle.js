@@ -4,7 +4,7 @@ import useImage from 'use-image'
 
 function Rectangle(props) {
 
-   const { width, height, x, y, fill, texture, opacity, strokeWidth, clickCheck, type, id, derection, draggable,onDragStart,onDragEnd } = props
+   const { width, height, x, y, fill, texture, opacity, strokeWidth, clickCheck, type, id, derection, draggable,onDragStart,onDragEnd,dragover } = props
 
    const [textureImage] = useImage(texture)
 
@@ -25,13 +25,14 @@ function Rectangle(props) {
          fill={texture ? null : fill}
          x={x}
          y={y}
+         onDragMove={e=>dragover(e.evt)}
          derection={derection}
          stroke="black"
          opacity={opacity}
          draggable={draggable}
          onDragStart={onDragStart}
          onDragEnd={(e)=>onDragEnd(e)}
-         strokeWidth={strokeWidth}
+         strokeWidth={strokeWidth ||0}
          fillPatternImage={textureImage && textureImage}
       />
 

@@ -4,6 +4,9 @@ import { createSlice, createAsyncThunk, } from '@reduxjs/toolkit';
 const FRAME_SIZE = 5;
 const colorMain = '#efcf9f'
 
+
+const heightCloset = 600
+
 function id() {
    return Math.round(Math.random() * 10000);
 }
@@ -11,7 +14,7 @@ function id() {
 
 const initialState = {
    leftRectangels: [
-      { id: 20, width: 100, height: 600 - 60, x: 0, y: 30 },
+      { id: 20, width: 100, height: heightCloset - 60, x: 0, y: 30 },
    ],
    leftBackRectangles: [
       {id:111, x: 100, y: 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
@@ -19,11 +22,11 @@ const initialState = {
       {id:113, x: 100, y: 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', colorType: 'main' },
 
 
-      { id:114,x: 100, y: 600 - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
-      { id:115,x: 100, y: 600 - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'shadow' },
-      { id:116,x: 100, y: 600 - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
+      { id:114,x: 100, y: heightCloset - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
+      { id:115,x: 100, y: heightCloset - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'shadow' },
+      { id:116,x: 100, y: heightCloset - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
 
-      { id:117,x: 0, y: 30, width: 100, height: 600 - 60, fill: '#efcf9f', colorType: 'main' },
+      { id:117,x: 0, y: 30, width: 100, height: heightCloset - 60, fill: '#efcf9f', colorType: 'main' },
    ],
    horizontalLeftFrames: [],
    colorMain: '#efcf9f',

@@ -17,32 +17,40 @@ function id() {
    return Math.round(Math.random() * 10000);
 }
 
+const widthCloset = 600
+const heightCloset = 600
 
 const initialState = {
-   Rectangels: [{ id: 1, width: 1000 - 10, height: 600 - 10, x: 105, y: 5 }],
+   Rectangels: [{ id: 1, width: widthCloset - 10, height: heightCloset - 10, x: 105, y: 5 }],
    verticalFrames: [],
    horizontalFrames: [],
    mainBackRectangles: [
-      { id: id(), width: 1000, height: 600, x: 100, y: 0, fill: colorMain, colorType: 'frame', texture: null, },
-      { id: id(), width: 1000, height: 600, x: 100, y: 0, fill: 'black', opacity: 0.2, colorType: 'shadow', texture: null, },
+      { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: colorMain, colorType: 'frame', texture: null, },
+      { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: 'black', opacity: 0.2, colorType: 'shadow', texture: null, },
 
       {
          id: id(),
          points: [
             105, 5,
             205, 30,
-            205, 600 - 30,
-            105, 600 - 5], fill: colorMain, texture: null, type: 'line', changeType: 'left', colorType: 'main'
+            205, heightCloset - 30,
+            105, heightCloset - 5],
+         fill: colorMain,
+         texture: null,
+         type: 'line',
+         changeType: 'left',
+         colorType: 'main'
       },
 
       {
          id: id(),
          points: [
             105, 5,
-            110 + (1000 - 15), 5,
-            105 + (1000 - 10 - 100), 30,
+            110 + (widthCloset - 15), 5,
+            105 + (widthCloset - 10 - 100), 30,
             205, 30],
-         fill: colorMain, type: 'line',
+         fill: colorMain,
+         type: 'line',
          changeType: 'up',
          texture: null,
          colorType: 'main'
@@ -51,10 +59,17 @@ const initialState = {
       {
          id: id(),
          points: [
-            105 + (1000 - 10 - 100), 30,
-            105 + (1000 - 10), 5,
-            105 + (1000 - 10), 600 - 5,
-            105 + (1000 - 10 - 100), 600 - 30], fill: colorMain, type: 'line',
+            105 + (widthCloset - 10 - 100), 30,
+            105 + (widthCloset - 10), 5,
+            105 + (widthCloset - 10), heightCloset - 5,
+            105 + (widthCloset - 10 - 100), heightCloset - 30],
+         // points: [
+         //    105 + (widthCloset - 10 - 100), 25,
+         //    105 + (widthCloset - 10), 0,
+         //    105 + (widthCloset - 10), heightCloset - 5,
+         //    105 + (widthCloset - 10 - 100), heightCloset - 30],
+         fill: colorMain,
+         type: 'line',
          changeType: 'right',
          colorType: 'main',
          texture: null,
@@ -63,16 +78,43 @@ const initialState = {
       {
          id: id(),
          points: [
-            205, 600 - 30,
-            105 + (1000 - 10 - 100), 600 - 30,
-            105 + (1000 - 15), 600 - 5,
-            110, 600 - 5], fill: colorMain, type: 'line',
+            205, heightCloset - 30,
+            105 + (widthCloset - 10 - 100), heightCloset - 30,
+            110 + (widthCloset - 15), heightCloset - 5,
+            105, heightCloset - 5],
+         fill: colorMain,
+         type: 'line',
          changeType: 'down',
          colorType: 'main',
          texture: null,
       },
-      { id: id(), width: 1000 - 10 - 200, height: 600 - 60, x: 205, y: 30, fill: colorMain, colorType: 'frame', texture: null, type: 'backWall', },
-      { id: id(), width: 1000 - 10 - 200, height: 600 - 60, x: 205, y: 30, fill: 'black', opacity: 0.2, colorType: 'shadow', texture: null, type: 'backWallShadow', }],
+      {
+         id: id(),
+         width: widthCloset - 10 - 200,
+         height: heightCloset - 60,
+         // height: heightCloset - 55,
+         x: 205,
+         y: 30,
+         // y: 25,
+         fill: colorMain, colorType: 'frame', texture: null,
+         type: 'backWall',
+         changeType: 'main'
+      },
+      {
+         id: id(),
+         width: widthCloset - 10 - 200,
+         height: heightCloset - 60,
+         // height: heightCloset - 55,
+         x: 205,
+         // y: 25,
+         y: 30,
+         fill: 'black',
+         opacity: 0.2,
+         colorType: 'shadow',
+         texture: null,
+         changeType: 'main',
+         type: 'backWallShadow',
+      }],
    colorMain: '#efcf9f',
    elements: [],
    TextureMain: null
@@ -91,8 +133,15 @@ const mainRectanglesSlice = createSlice({
             (yk > item.y && yk < (item.y + item.height))))[0]
 
          const newFrame = {
-            id: idFrame, width: FRAME_SIZE, height: itemSelect.height, color: state.colorMain, texture: state.TextureMain,
-            x: xk, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1
+            id: idFrame,
+            width: FRAME_SIZE,
+            height: itemSelect.height,
+            color: state.colorMain,
+            texture: state.TextureMain,
+            x: xk,
+            y: itemSelect?.y,
+            type: 'frame',
+            draggable: true, derection: 1
          }
 
          let intersected = false;
@@ -110,7 +159,7 @@ const mainRectanglesSlice = createSlice({
             const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
             { id: id(), width: xk - itemSelect?.x, height: itemSelect?.height, x: itemSelect?.x, y: itemSelect?.y },
                newFrame,
-            // { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, color: 'black', opacity: 0.2, x: xk, y: itemSelect?.y, draggable: true, derection: 1 },
+            { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, type: 'frame', color: 'black', opacity: 0.2, x: xk, y: itemSelect?.y, draggable: true, derection: 1 },
             { id: id(), width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE, height: itemSelect?.height, x: xk + FRAME_SIZE, y: itemSelect?.y }]
 
 
@@ -148,7 +197,7 @@ const mainRectanglesSlice = createSlice({
             const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
             { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
                newFrame,
-            // { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: 'black', opacity: 0.2, x: itemSelect?.x, y: yk, draggable: true, derection: 2 },
+            { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: 'black', opacity: 0.2, x: itemSelect?.x, y: yk, draggable: true, derection: 2 },
             { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
 
 
@@ -224,7 +273,7 @@ const mainRectanglesSlice = createSlice({
             id: idElement,
             width: itemSelect.width,
             height: heightBurb,
-            src: './images/штанга.png',
+            src: './images/drawer.png',
             x: itemSelect?.x, y: yk, type: 'drawer', draggable: true, derection: 2
          }
 
@@ -261,6 +310,9 @@ const mainRectanglesSlice = createSlice({
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
+
+
+
          const newElement = {
             id: idElement,
             width: widthHanger,
@@ -277,7 +329,8 @@ const mainRectanglesSlice = createSlice({
 
          state.elements = state.elements.filter(item => item?.id !== idd)
 
-         if (itemSelect.width > widthHanger && itemSelect.height > heightHanger && !intersected) {
+
+         if (itemSelect.width > widthHanger && itemSelect.height > heightHanger && !intersected && ((xk - widthLeftWall + widthHanger) < itemSelect.width)) {
             const newElems = [...state.elements.filter(item => item?.id !== idd),
                newElement
             ]
@@ -806,6 +859,24 @@ const mainRectanglesSlice = createSlice({
          // если itemsRight пустой значит рамка стоит в упор к стенке
 
       },
+      onBlurInputDrawer(state, action) {
+
+         let { value, containerDiv, wrap, itemSelect, height } = action.payload
+
+         containerDiv.removeChild(wrap);
+
+         let changeValue = 0
+
+         changeValue = value - height
+
+         state.elements = state.elements.map(item => {
+            if (item.id === itemSelect.id) {
+               return { ...item, height: item.height + changeValue }
+            } else return item
+         })
+
+
+      },
       changeSizeWidthMain(state, action) {
 
          const { widthClosetChange, widthCloset, maxWidth, minWidth, widthLeftWall, lastFrame } = action.payload
@@ -1303,6 +1374,99 @@ const mainRectanglesSlice = createSlice({
                return { ...item, x: item.x + changeValue }
             }
          })
+      },
+      changeWallInside(state, action) {
+
+         const { value, type } = action.payload
+
+
+         if (!value) {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+               if (item.changeType === type) {
+                  return { ...item, fill: 'white' }
+               } else return item
+            })
+         } else {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+               if (item.changeType === type) {
+                  return { ...item, fill: colorMain }
+               } else return item
+            })
+         }
+
+
+      },
+      changeVisibableUp(state, action) {
+
+         const { value } = action.payload
+
+
+         if (!value) {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+
+
+               switch (item.changeType) {
+                  case 'up':
+                     item.fill = 'white'
+                     item.points[1] = item.points[1] - 5
+                     item.points[3] = item.points[3] - 5
+                     item.points[5] = item.points[5] - 5
+                     item.points[7] = item.points[7] - 5
+                     return item
+
+                  case 'left':
+                     item.points[1] = item.points[1] - 5
+                     item.points[3] = item.points[3] - 5
+                     return item
+
+                  case 'right':
+                     item.points[1] = item.points[1] - 5
+                     item.points[3] = item.points[3] - 5
+                     return item
+                  case 'main':
+                     item.y = item.y - 5
+                     item.height = item.height - 5
+                     return item
+                  default:
+                     return item
+               }
+
+
+            })
+         } else {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+
+
+               switch (item.changeType) {
+                  case 'up':
+                     item.fill = colorMain
+                     item.points[1] = item.points[1] + 5
+                     item.points[3] = item.points[3] + 5
+                     item.points[5] = item.points[5] + 5
+                     item.points[7] = item.points[7] + 5
+                     return item
+
+                  case 'left':
+                     item.points[1] = item.points[1] + 5
+                     item.points[3] = item.points[3] + 5
+                     return item
+
+                  case 'right':
+                     item.points[1] = item.points[1] + 5
+                     item.points[3] = item.points[3] + 5
+                     return item
+                  case 'main':
+                     item.y = item.y + 5
+                     item.height = item.height + 5
+                     return item
+                  default:
+                     return item
+
+               }
+
+            })
+         }
+
       }
    },
 
@@ -1321,8 +1485,10 @@ export const { createVertical, createHorizontal, createNewBurb,
    changeColorMain, changeVisionMainWall,
    changeTextureMain,
    changeSizeMainWall, DragStarElement,
-   createHanger, createSideHanger, DragStartHanger,
-   deleteElement,createDrawer
+   createHanger, createSideHanger,
+   DragStartHanger, deleteElement,
+   createDrawer, onBlurInputDrawer,
+   changeWallInside, changeVisibableUp
 } = mainRectanglesSlice.actions;
 
 

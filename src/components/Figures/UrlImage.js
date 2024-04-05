@@ -2,10 +2,12 @@ import React from 'react'
 import { Image } from 'react-konva';
 import useImage from 'use-image';
 
-function UrlImage({image,onDragStart,onDragEnd}) {
+function UrlImage({ image, onDragStart, onDragEnd, clickCheck, dragover }) {
    const [img] = useImage(image.src);
 
-
+   function checkClick() {
+      clickCheck(this)
+   }
 
    return (
 
@@ -15,13 +17,16 @@ function UrlImage({image,onDragStart,onDragEnd}) {
          y={image.y}
          width={image.width}
          height={image.height}
-         // stroke={'white'}
-         // strokeWidth={1}
+         stroke={'white'}
+         strokeWidth={1}
          draggable={true}
+         onDragMove={e => dragover(e.evt)}
+         id={image.id}
+         type={image.type}
+         onClick={checkClick}
          onDragStart={onDragStart}
-         onDragEnd={(e)=>onDragEnd(e)}
-         // offsetX={img ? img.width / 2 : 0}
-         // offsetY={img ? img.height / 2 : 0}
+         onDragEnd={(e) => onDragEnd(e)}
+   
       />
 
 

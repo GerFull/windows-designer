@@ -7,7 +7,7 @@ const initialState = {
    maxHeight: 3000,
    maxWidth: 5000,
    minWidth: 2000,
-   widthCloset: 1000,
+   widthCloset: 600,
    heightCloset: 600,
    widthLeftWall:100,
    widthRightWall:100,

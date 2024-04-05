@@ -18,7 +18,8 @@ import {
   changeTextureMain, changeSizeMainWall,
   createNewBurb, DragStarElement,
   createHanger, createSideHanger, DragStartHanger,
-  deleteElement,createDrawer
+  deleteElement, createDrawer, onBlurInputDrawer,
+  changeWallInside, changeVisibableUp
 } from "../store/slice/mainRectangles";
 import {
   createHorizontalLeft, DragStarHorizontalLeft,
@@ -42,7 +43,7 @@ import UrlImage from "./Figures/UrlImage";
 // Stroke рамое меняется при установке новый рядом
 
 // переделать SelectdeRectId сделать его глобальным
-
+// сделать ограничения по изменению ширины и высоты рамок
 
 
 
@@ -53,15 +54,13 @@ import UrlImage from "./Figures/UrlImage";
 
 // документация подписать за что отвечает каждый блок
 
-// баг вешалка ставиться за шкаф если край внутри шкафа
+
 // менять x у элементов при увеличении ширины левой стенки
 
 
-// ширина и высота футболки измерить)
-// по умолчанию 3 метра
 
-// цвет кромки внутри цвет одинаковый внешне
-// ящик прямуголник( с изменяемой высотой) по умолчанию 100 мм без углубления
+
+const FRAME_SIZE = 5;
 
 
 const colors = [{
@@ -105,12 +104,16 @@ function RootFrame() {
   const [LeftWall, setLeftWall] = useState(false)
   const [RightWall, setRightWall] = useState(false)
   const [MainWall, setMainWall] = useState(true)
+  const [LeftInside, setLeftInside] = useState(true)
+  const [RightInside, setRightInside] = useState(true)
+  const [UpVisable, setUpVisable] = useState(true)
 
   const [textures, setTextures] = useState([])
 
   const LayerRef = useRef(null)
   const [selectedRectId, setSelectedRectId] = useState(null)
   const [derection, setDerection] = useState(null)
+  const [showObject, setShowObject] = useState({ fill: '#99ff99', opacity: 0.7, width: 10, height: 10, x: 0, y: 0 })
 
 
 
@@ -122,6 +125,7 @@ function RootFrame() {
     if (selectedRectId !== null) {
 
       if (Rectangels.includes(selectedRectId)) {
+        setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
         if (derection === '1') {
           dispatch(
             createVertical(
@@ -186,11 +190,10 @@ function RootFrame() {
   const dragover = (e) => {
 
 
-
+   
     e.preventDefault();
     const x = e.layerX - 100
     const y = e.layerY - 100
-    //props.store.mousePosition(x, y);
 
     const newArr = [...Rectangels, ...leftRectangels, ...RightRectangels]
 
@@ -203,6 +206,26 @@ function RootFrame() {
     if (item !== undefined) {
 
       setSelectedRectId(item)
+      switch (derection) {
+        case '1':
+          setShowObject({ ...showObject, width: FRAME_SIZE, height: item.height, x: x, y: item.y })
+          break;
+        case '2':
+          setShowObject({ ...showObject, width: item.width, height: FRAME_SIZE, x: item.x, y: y })
+          break;
+        case '3':
+          setShowObject({ ...showObject, width: item.width, height: 20, x: item.x, y: y })
+          break;
+        case '4':
+          setShowObject({ ...showObject, width: 90, height: 120, x: x, y: item.y })
+          break;
+        case '6':
+          setShowObject({ ...showObject, width: item.width, height: 20, x: item.x, y: y })
+          break;
+
+        default:
+          break;
+      }
 
     } else setSelectedRectId(null)
 
@@ -242,7 +265,7 @@ function RootFrame() {
 
 
   const onDragEndMain = (x, y, id, derection) => {
-
+    setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
     if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < y + heightCloset)) {
 
@@ -260,7 +283,7 @@ function RootFrame() {
 
   const onDragEndElements = (x, y, id, type) => {
 
-
+    setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
 
     if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < heightCloset)) {
@@ -270,7 +293,7 @@ function RootFrame() {
           dispatch(createNewBurb({ xk: x, yk: y, idd: id }))
           break;
         case 'hanger':
-          dispatch(createHanger({ xk: x, yk: y, idd: id }))
+          dispatch(createHanger({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall }))
           break;
         case 'drawer':
           dispatch(createDrawer({ xk: x, yk: y, idd: id }))
@@ -304,7 +327,7 @@ function RootFrame() {
 
 
   const onDragEndLeft = (x, y, id) => {
-
+    setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
     if ((x > 0 && x < widthLeftWall) && (y > 20 && y < y + heightCloset - 20)) {
       dispatch(
         createHorizontalLeft(
@@ -321,7 +344,7 @@ function RootFrame() {
   }
 
   const onDragEndRight = (x, y, id) => {
-
+    setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
     if ((x > widthLeftWall + widthCloset && x < widthLeftWall + widthCloset + widthLeftWall) && (y > 20 && y < y + heightCloset - 20)) {
 
@@ -349,17 +372,20 @@ function RootFrame() {
 
   function clickCheck(props) {
 
-
+    if (props.attrs.type === "drawer") {
+      createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
+    }
     if (props.attrs.derection === 2 && props.attrs.width < widthCloset - 10) {
       createInput(props.getAbsolutePosition(), props.attrs.width, props.attrs)
-
     }
-    else if (props.attrs.derection === 1 && props.attrs.height < heightCloset - 10) {
+    if (props.attrs.derection === 1 && props.attrs.height < heightCloset - 10) {
       createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
     }
 
-
   }
+
+
+
 
 
   function createInput(pos, value, item) {
@@ -388,13 +414,16 @@ function RootFrame() {
     input.style.width = 100 + 3 + 'px';
     input.value = (value + 2) * 5
 
-    if (item.derection === 2) {
+    if (item?.derection === 2) {
       input.onblur = (e) => dispatch(onBlurInputHorizontal({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, width: item.width }))
     }
-    else {
+    if (item?.derection === 1) {
       input.onblur = (e) => dispatch(onBlurInputVertical({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
     }
-
+    if (item.type === 'drawer') {
+      input.value = value * 5
+      input.onblur = (e) => dispatch(onBlurInputDrawer({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
+    }
 
 
 
@@ -584,6 +613,20 @@ function RootFrame() {
 
   }
 
+  const changeLeftInside = (value) => {
+    setLeftInside(value)
+    dispatch(changeWallInside({ value, type: 'left' }))
+  }
+
+  const changeRightInside = (value) => {
+    setRightInside(value)
+    dispatch(changeWallInside({ value, type: 'right' }))
+  }
+
+  const changeUpVisable = (value) => {
+    setUpVisable(value)
+    dispatch(changeVisibableUp({ value, }))
+  }
 
 
   return (
@@ -683,6 +726,18 @@ function RootFrame() {
               Задняя стенка
               <input checked={MainWall} onClick={e => changeMainWall(e.target.checked)} type="checkbox" />
             </div>
+            <div>
+              Левая стенка
+              <input checked={LeftInside} onClick={e => changeLeftInside(e.target.checked)} type="checkbox" />
+            </div>
+            <div>
+              Правая стенка
+              <input checked={RightInside} onClick={e => changeRightInside(e.target.checked)} type="checkbox" />
+            </div>
+            <div>
+              Потолок
+              <input checked={UpVisable} onClick={e => changeUpVisable(e.target.checked)} type="checkbox" />
+            </div>
           </div>
         </div>
 
@@ -692,7 +747,8 @@ function RootFrame() {
 
 
       <Stage
-        width={1500}
+        // width={widthCloset+300}
+        width={1400}
         height={1000}
         ref={stageRef}
         onClick={(e) => handleClick(e)}
@@ -859,6 +915,7 @@ function RootFrame() {
                   strokeWidth={item.type === 'frame' && 0.3}
                   // strokeWidth={1}
                   type={item.type}
+                  dragover={dragover}
                   onDragStart={item.derection === 1
                     ? () => dispatch(DragStarVertical({ itemSelect: item }))
                     : () => dispatch(DragStarHorizontal({ itemSelect: item }))}
@@ -867,12 +924,26 @@ function RootFrame() {
                 />
               )
             }
+
+            {
+              selectedRectId && <Rectangle
+                x={showObject.x}
+                y={showObject.y}
+                width={showObject.width}
+                height={showObject.height}
+                fill={showObject.fill}
+                opacity={showObject.opacity}
+
+              />
+            }
             {
               elements.map(item =>
 
                 <UrlImage
                   key={item.id}
                   image={item}
+                  dragover={dragover}
+                  clickCheck={clickCheck}
                   onDragStart={() => onDragStartElements(item.type, item)}
                   onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 100, item.id, item.type)}
                 />

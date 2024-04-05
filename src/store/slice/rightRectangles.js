@@ -5,6 +5,9 @@ import { createSlice, createAsyncThunk, } from '@reduxjs/toolkit';
 const FRAME_SIZE = 5;
 const colorMain = '#efcf9f'
 
+const widthCloset = 600
+const heightCloset = 600
+
 function id() {
    return Math.round(Math.random() * 10000);
 }
@@ -12,21 +15,21 @@ function id() {
 
 const initialState = {
    RightRectangels: [
-      { id: 40, width: 100, height: 600 - 60, x: 100 + 1000, y: 30 },
+      { id: 40, width: 100, height: heightCloset - 60, x: 100 + widthCloset, y: 30 },
    ],
 
    rightBackRectangles: [
-      { id: 211, x: 1000 + 100, y: 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
-      { id: 212, x: 1000 + 100, y: 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
-      { id: 213, x: 1000 + 100, y: 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', colorType: 'main' },
+      { id: 211, x: widthCloset + 100, y: 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
+      { id: 212, x: widthCloset + 100, y: 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
+      { id: 213, x: widthCloset + 100, y: 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', colorType: 'main' },
 
 
-      { id: 214, x: 1000 + 100, y: 600 - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
-      { id: 215, x: 1000 + 100, y: 600 - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
-      { id: 216, x: 1000 + 100, y: 600 - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
+      { id: 214, x: widthCloset + 100, y: heightCloset - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
+      { id: 215, x: widthCloset + 100, y: heightCloset - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
+      { id: 216, x: widthCloset + 100, y: heightCloset - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
 
 
-      { id: 217, x: 1000 + 100, y: 30, width: 100, height: 600 - 60, fill: '#efcf9f', colorType: 'main' },
+      { id: 217, x: widthCloset + 100, y: 30, width: 100, height: heightCloset - 60, fill: '#efcf9f', colorType: 'main' },
    ],
    horizontalRightFrames: [],
    colorMain: '#efcf9f',
