@@ -17,8 +17,8 @@ function UrlImage({ image, onDragStart, onDragEnd, clickCheck, dragover }) {
          y={image.y}
          width={image.width}
          height={image.height}
-         stroke={'white'}
-         strokeWidth={1}
+         // stroke={'white'}
+         // strokeWidth={1}
          draggable={true}
          onDragMove={e => dragover(e.evt)}
          id={image.id}

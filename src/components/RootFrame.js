@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Rect, Group, Image } from "react-konva";
+import { Stage, Layer, Group } from "react-konva";
 import style from '../css/RootFrame.module.scss'
 import { useDispatch, useSelector } from 'react-redux';
 import Metrics from "./Metrics";
@@ -19,7 +19,8 @@ import {
   createNewBurb, DragStarElement,
   createHanger, createSideHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
-  changeWallInside, changeVisibableUp
+  changeWallInside, changeVisibableUp,
+  checkIntercetion
 } from "../store/slice/mainRectangles";
 import {
   createHorizontalLeft, DragStarHorizontalLeft,
@@ -53,7 +54,7 @@ import UrlImage from "./Figures/UrlImage";
 
 
 // документация подписать за что отвечает каждый блок
-
+// попробывать использовать useCallback для dragOver
 
 // менять x у элементов при увеличении ширины левой стенки
 
@@ -79,11 +80,11 @@ const colors = [{
 
 function RootFrame() {
   const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements } = useSelector(store => store.mainRectangles)
+  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection } = useSelector(store => store.mainRectangles)
   const { leftRectangels, leftBackRectangles } = useSelector(store => store.leftRectangels)
   const { RightRectangels, rightBackRectangles } = useSelector(store => store.rightRectangels)
 
-  const state = useSelector(store => store)
+  // const state = useSelector(store => store)
 
   const dispatch = useDispatch()
 
@@ -190,7 +191,7 @@ function RootFrame() {
   const dragover = (e) => {
 
 
-   
+
     e.preventDefault();
     const x = e.layerX - 100
     const y = e.layerY - 100
@@ -208,16 +209,19 @@ function RootFrame() {
       setSelectedRectId(item)
       switch (derection) {
         case '1':
+          // dispatch(checkIntercetion({ element: { width: FRAME_SIZE, height: item.height, x: x, y: item.y } }))
           setShowObject({ ...showObject, width: FRAME_SIZE, height: item.height, x: x, y: item.y })
           break;
         case '2':
+          // dispatch(checkIntercetion({ element: { width: item.width, height: FRAME_SIZE, x: item.x, y: y } }))
           setShowObject({ ...showObject, width: item.width, height: FRAME_SIZE, x: item.x, y: y })
           break;
         case '3':
           setShowObject({ ...showObject, width: item.width, height: 20, x: item.x, y: y })
           break;
         case '4':
-          setShowObject({ ...showObject, width: 90, height: 120, x: x, y: item.y })
+          // dispatch(checkIntercetion({ element: { width: 100, height: 130, x: x, y: item.y } }))
+          setShowObject({ ...showObject, width: 100, height: 130, x: x, y: item.y })
           break;
         case '6':
           setShowObject({ ...showObject, width: item.width, height: 20, x: item.x, y: y })
@@ -229,9 +233,6 @@ function RootFrame() {
 
     } else setSelectedRectId(null)
 
-
-
-
   }
 
   const fetchData = async () => {
@@ -240,6 +241,10 @@ function RootFrame() {
 
 
   // console.log(elements)
+
+
+
+  // console.log(derection)
 
   useEffect(() => {
     // fetchData()
@@ -316,13 +321,25 @@ function RootFrame() {
 
 
   const onDragStartElements = (type, item) => {
-    if (type === 'element') {
-      dispatch(DragStarElement({ itemSelect: item }))
-    } else {
-      dispatch(DragStartHanger({ itemSelect: item }))
+
+
+    switch (type) {
+      case 'element':
+        setDerection('3')
+        dispatch(DragStarElement({ itemSelect: item }))
+        break;
+      case 'hanger':
+        setDerection('4')
+        dispatch(DragStartHanger({ itemSelect: item }))
+        break;
+      case 'drawer':
+        setDerection('6')
+        dispatch(DragStartHanger({ itemSelect: item }))
+        break;
+    
+      default:
+        break;
     }
-
-
   }
 
 
@@ -447,17 +464,16 @@ function RootFrame() {
 
 
   const changeSizeWidth = () => {
-    const lastFrame = verticalFrames.sort((itme1, item2) => itme1?.x > item2?.x ? -1 : 1)[0]?.x
+    const copyVerticalFrames = [...verticalFrames]
+
+    const lastFrame = copyVerticalFrames.sort((itme1, item2) => itme1?.x > item2?.x ? -1 : 1)[0]?.x
+
+
 
     dispatch(changeSizeWidthMain({ widthClosetChange, widthCloset, maxWidth, minWidth, widthLeftWall, lastFrame }))
     dispatch(changeSizeWallRight({ widthClosetChange, widthCloset, maxWidth, minWidth, lastFrame }))
 
     // 50 минимальный размер ячейки
-
-
-
-
-
 
     if (widthClosetChange > maxWidth) {
 
@@ -496,20 +512,14 @@ function RootFrame() {
 
     }
 
-
-
-
-
-
-
-
   }
 
 
   const changeSizeHeight = () => {
 
+    const copyHorizontalFrames = [...horizontalFrames]
 
-    const lastFrame = horizontalFrames.sort((itme1, item2) => itme1?.y > item2?.y ? -1 : 1)[0]?.y
+    const lastFrame = copyHorizontalFrames.sort((itme1, item2) => itme1?.y > item2?.y ? -1 : 1)[0]?.y
 
     dispatch(changeSizeHeightMain({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame }))
     dispatch(changeSizeHeightLeft({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame }))
@@ -518,20 +528,20 @@ function RootFrame() {
 
     if (heightClosetChange > maxHeight) {
 
-      // setHeightCloset(maxHeight / 5)
+
       dispatch(changeHeight(maxHeight / 5))
       setHeightClosetChange(maxHeight)
 
     } else if (heightClosetChange < minHeight) {
       if (heightClosetChange / 5 < lastFrame + 50) {
 
-        // setHeightCloset(lastFrame + 50)
+
         dispatch(changeHeight(lastFrame + 50))
         setHeightClosetChange((lastFrame + 50) * 5)
 
       } else {
 
-        // setHeightCloset(minHeight / 5)
+
         dispatch(changeHeight(minHeight / 5))
         setHeightClosetChange(minHeight)
 
@@ -540,13 +550,13 @@ function RootFrame() {
     } else {
       if (heightClosetChange / 5 < lastFrame + 50) {
 
-        // setHeightCloset(lastFrame + 50)
+
         dispatch(changeHeight(lastFrame + 50))
         setHeightClosetChange((lastFrame + 50) * 5)
 
       } else {
 
-        // setHeightCloset(heightClosetChange / 5)
+
         dispatch(changeHeight(heightClosetChange / 5))
 
       }
@@ -628,6 +638,19 @@ function RootFrame() {
     dispatch(changeVisibableUp({ value, }))
   }
 
+
+  const onDragStartFrame = (item) => {
+
+    if (item.derection === 1) {
+      setDerection('1')
+      dispatch(DragStarVertical({ itemSelect: item }))
+    } else {
+      setDerection('2')
+      dispatch(DragStarHorizontal({ itemSelect: item }))
+    }
+
+
+  }
 
   return (
     <div style={{
@@ -900,14 +923,14 @@ function RootFrame() {
                   key={item.id}
                   width={item.width}
                   height={item.height}
-                  // fill={item.color || 'black'}
-                  fill={item.color}
+                  fill={item.color || 'black'}
+                  // fill={item.color}
                   listening={false}
                   x={item.x}
                   y={item.y}
                   id={item.id}
-                  stroke="black"
-                  // stroke='white'
+                  // stroke="black"
+                  stroke='white'
                   opacity={item?.opacity}
                   clickCheck={clickCheck}
                   derection={item?.derection}
@@ -916,9 +939,7 @@ function RootFrame() {
                   // strokeWidth={1}
                   type={item.type}
                   dragover={dragover}
-                  onDragStart={item.derection === 1
-                    ? () => dispatch(DragStarVertical({ itemSelect: item }))
-                    : () => dispatch(DragStarHorizontal({ itemSelect: item }))}
+                  onDragStart={() => onDragStartFrame(item)}
                   texture={item?.texture && item?.texture}
                   onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 100, item.id, item.derection)}
                 />
@@ -931,7 +952,7 @@ function RootFrame() {
                 y={showObject.y}
                 width={showObject.width}
                 height={showObject.height}
-                fill={showObject.fill}
+                fill={!intersection ? '#99ff99' : 'red'}
                 opacity={showObject.opacity}
 
               />

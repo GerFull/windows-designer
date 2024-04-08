@@ -117,7 +117,8 @@ const initialState = {
       }],
    colorMain: '#efcf9f',
    elements: [],
-   TextureMain: null
+   TextureMain: null,
+   intersection: false
 }
 
 
@@ -286,15 +287,12 @@ const mainRectanglesSlice = createSlice({
 
          if (!intersected) {
 
-            // const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
-            // { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
-            // { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - heightBurb, x: itemSelect?.x, y: yk + heightBurb }]
 
             const newElems = [...state.elements.filter(item => item?.id !== idd),
                newElement
             ]
 
-            // state.Rectangels = newsect
+
             state.elements = newElems
          }
       },
@@ -302,13 +300,14 @@ const mainRectanglesSlice = createSlice({
          const { xk, yk, idd, widthLeftWall } = action.payload
 
          const idElement = id()
-         const widthHanger = 90
-         const heightHanger = 120
+         const widthHanger = 100
+         const heightHanger = 130
 
          let intersected = false;
 
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
+
 
 
 
@@ -329,8 +328,7 @@ const mainRectanglesSlice = createSlice({
 
          state.elements = state.elements.filter(item => item?.id !== idd)
 
-
-         if (itemSelect.width > widthHanger && itemSelect.height > heightHanger && !intersected && ((xk - widthLeftWall + widthHanger) < itemSelect.width)) {
+         if (itemSelect.width > widthHanger && itemSelect.height > heightHanger && !intersected && ((xk - itemSelect.x + widthHanger) < itemSelect.width)) {
             const newElems = [...state.elements.filter(item => item?.id !== idd),
                newElement
             ]
@@ -1425,7 +1423,7 @@ const mainRectanglesSlice = createSlice({
                      return item
                   case 'main':
                      item.y = item.y - 5
-                     item.height = item.height - 5
+                     item.height = item.height + 5
                      return item
                   default:
                      return item
@@ -1457,7 +1455,7 @@ const mainRectanglesSlice = createSlice({
                      return item
                   case 'main':
                      item.y = item.y + 5
-                     item.height = item.height + 5
+                     item.height = item.height - 5
                      return item
                   default:
                      return item
@@ -1466,6 +1464,19 @@ const mainRectanglesSlice = createSlice({
 
             })
          }
+
+      },
+      checkIntercetion(state, action) {
+
+         const { element } = action.payload
+
+
+
+         // state.Rectangels.filter(item => item.type === 'frame').forEach(item => {
+         //    state.intersection = checkPlaneIntersection(element.x, element.y, element.width, element.height, item.x, item.y, item.width, item.height)
+
+         // })
+
 
       }
    },
@@ -1488,7 +1499,8 @@ export const { createVertical, createHorizontal, createNewBurb,
    createHanger, createSideHanger,
    DragStartHanger, deleteElement,
    createDrawer, onBlurInputDrawer,
-   changeWallInside, changeVisibableUp
+   changeWallInside, changeVisibableUp,
+   checkIntercetion
 } = mainRectanglesSlice.actions;
 
 
