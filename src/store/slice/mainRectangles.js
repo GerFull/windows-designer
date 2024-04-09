@@ -127,8 +127,9 @@ const mainRectanglesSlice = createSlice({
    initialState,
    reducers: {
       createVertical(state, action) {
-         const { xk, yk, idd, widthLeftWall } = action.payload
+         const { xk, yk, shadowid,mainId, widthLeftWall } = action.payload
          const idFrame = id()
+         const idShadowFrame = id()
 
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
@@ -142,6 +143,17 @@ const mainRectanglesSlice = createSlice({
             x: xk,
             y: itemSelect?.y,
             type: 'frame',
+
+            draggable: true, derection: 1
+         }
+
+         const shadowFrame = {
+            id: idShadowFrame,
+            idFrame: idFrame, width: FRAME_SIZE,
+            type: 'shadowframe', height: itemSelect.height,
+            color: 'black', opacity: 0.2,
+            frameID: idFrame,
+            x: xk, y: itemSelect?.y,
             draggable: true, derection: 1
          }
 
@@ -157,10 +169,10 @@ const mainRectanglesSlice = createSlice({
 
          if (!intersected) {
 
-            const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
+            const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== shadowid).filter(item => item?.id !== mainId),
             { id: id(), width: xk - itemSelect?.x, height: itemSelect?.height, x: itemSelect?.x, y: itemSelect?.y },
                newFrame,
-            { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, type: 'frame', color: 'black', opacity: 0.2, x: xk, y: itemSelect?.y, draggable: true, derection: 1 },
+               shadowFrame,
             { id: id(), width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE, height: itemSelect?.height, x: xk + FRAME_SIZE, y: itemSelect?.y }]
 
 
@@ -174,16 +186,43 @@ const mainRectanglesSlice = createSlice({
 
       },
       createHorizontal(state, action) {
-         const { xk, yk, idd } = action.payload
+         const { xk, yk, shadowid,mainId } = action.payload
 
          const idFrame = id()
-
+         const idShadowFrame = id()
          let intersected = false;
+
+
+         console.log(shadowid)
+         console.log(mainId)
 
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
-         const newFrame = { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, texture: state.TextureMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }
+         const newFrame = {
+            id: idFrame,
+            width: itemSelect.width,
+            height: FRAME_SIZE,
+            color: state.colorMain,
+            texture: state.TextureMain,
+            x: itemSelect?.x, y: yk,
+            type: 'frame',
+            draggable: true,
+            derection: 2
+         }
+
+         const shadowFrame = {
+            id: idShadowFrame,
+            idFrame: idFrame,
+            width: itemSelect.width,
+            type: 'shadowframe',
+            height: FRAME_SIZE,
+            color: 'black', opacity: 0.2,
+            x: itemSelect?.x,
+            y: yk, draggable: true,
+            derection: 2,
+            frameID: idFrame
+         }
 
          // проверка что рамка не пересикается с элемнтов 
 
@@ -195,10 +234,10 @@ const mainRectanglesSlice = createSlice({
 
          if (!intersected) {
 
-            const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
+            const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== shadowid).filter(item => item?.id !== mainId),
             { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
                newFrame,
-            { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: 'black', opacity: 0.2, x: itemSelect?.x, y: yk, draggable: true, derection: 2 },
+               shadowFrame,
             { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
 
 
@@ -214,7 +253,7 @@ const mainRectanglesSlice = createSlice({
 
       },
       createNewBurb(state, action) {
-         const { xk, yk, idd } = action.payload
+         const { xk, yk, idd, widthLeftWall, widthCloset } = action.payload
 
          const idElement = id()
 
@@ -226,13 +265,44 @@ const mainRectanglesSlice = createSlice({
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
-         const newElement = {
+
+
+         let newElement = {
             id: idElement,
             width: itemSelect.width,
             height: heightBurb,
             src: './images/штанга.png',
             x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
          }
+
+         if ((itemSelect.x === widthLeftWall + 5) && (itemSelect.x + itemSelect.width === widthCloset + widthLeftWall - 5)) {
+            newElement = {
+               id: idElement,
+               width: itemSelect.width - 100,
+               height: heightBurb,
+               src: './images/штанга.png',
+               x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
+            }
+
+         } else if (itemSelect.x === widthLeftWall + 5) {
+            newElement = {
+               id: idElement,
+               width: itemSelect.width - 50,
+               height: heightBurb,
+               src: './images/штанга.png',
+               x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
+            }
+         } else if (itemSelect.x + itemSelect.width === widthCloset + widthLeftWall - 5) {
+            newElement = {
+               id: idElement,
+               width: itemSelect.width - 50,
+               height: heightBurb,
+               src: './images/штанга.png',
+               x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
+            }
+         }
+
+
 
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height, newElement.id, item.id)) {
@@ -243,15 +313,15 @@ const mainRectanglesSlice = createSlice({
 
          if (!intersected) {
 
-            const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
-            { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
-            { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - heightBurb, x: itemSelect?.x, y: yk + heightBurb }]
+            // const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
+            // { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
+            // { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - heightBurb, x: itemSelect?.x, y: yk + heightBurb }]
 
             const newElems = [...state.elements.filter(item => item?.id !== idd),
                newElement
             ]
 
-            state.Rectangels = newsect
+            // state.Rectangels = newsect
             state.elements = newElems
          }
 
@@ -434,7 +504,7 @@ const mainRectanglesSlice = createSlice({
 
          let { itemSelect } = action.payload
 
-         state.verticalFrames = state.verticalFrames.filter(item => item.id !== itemSelect.id)
+         state.verticalFrames = state.verticalFrames.filter(item => item.id !== itemSelect.frameID)
 
 
          // рамки справа
@@ -488,6 +558,8 @@ const mainRectanglesSlice = createSlice({
             state.Rectangels = state.Rectangels.map(item => {
                if (item.id === itemSelect.id) {
                   return { ...item, width: 0, height: 0, }
+               } else if (item.id === itemSelect.frameID) {
+                  return { ...item, width: 0, height: 0, }
                }
                else if (itemsFrameLeft.includes(item) || itemsLeft.includes(item)) {
                   return { ...item, width: item.width + FRAME_SIZE + itemsRight.width }
@@ -502,6 +574,8 @@ const mainRectanglesSlice = createSlice({
             // если рамка справа есть 
             state.Rectangels = state.Rectangels.map(item => {
                if (item.id === itemSelect.id) {
+                  return { ...item, width: 0, height: 0, }
+               } else if (item.id === itemSelect.frameID) {
                   return { ...item, width: 0, height: 0, }
                }
                else if (itemsFrameLeft.includes(item) || itemsLeft.includes(item)) {
@@ -521,7 +595,7 @@ const mainRectanglesSlice = createSlice({
 
          const { itemSelect } = action.payload
 
-         state.horizontalFrames = state.horizontalFrames.filter(item => item.id !== itemSelect.id)
+         state.horizontalFrames = state.horizontalFrames.filter(item => item.id !== itemSelect.frameID)
 
          // рамки внизу
          const itemsFrameDown = state.Rectangels.filter(item => (
@@ -572,6 +646,8 @@ const mainRectanglesSlice = createSlice({
             state.Rectangels = state.Rectangels.map(item => {
                if (item.id === itemSelect.id) {
                   return { ...item, width: 0, height: 0, }
+               } else if (item.id === itemSelect.frameID) {
+                  return { ...item, width: 0, height: 0, }
                }
                else if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
                   return { ...item, height: item.height + FRAME_SIZE + itemDown.height }
@@ -586,6 +662,8 @@ const mainRectanglesSlice = createSlice({
             state.Rectangels = state.Rectangels.map(item => {
                if (item.id === itemSelect.id) {
                   return { ...item, width: 0, height: 0, }
+               } else if (item.id === itemSelect.frameID) {
+                  return { ...item, width: 0, height: 0, }
                }
                else if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
                   return { ...item, height: item.height + max.height + FRAME_SIZE, }
@@ -596,91 +674,6 @@ const mainRectanglesSlice = createSlice({
 
             state.verticalFrames = state.verticalFrames.filter(item_a => !deleteRec.some(item_B => item_a.id === item_B.id))
          }
-
-      },
-      DragStarElement(state, action) {
-
-         const { itemSelect } = action.payload
-
-         // рамки внизу
-         const itemsFrameDown = state.Rectangels.filter(item => (
-            (item.x > itemSelect.x && (item.x + item.width) < (itemSelect.x + itemSelect.width))
-            &&
-            ((item.y) === itemSelect.y + itemSelect.height) && item?.type === 'frame'
-         )
-         )
-
-         // прямоугольник внизу
-         const itemDown = state.Rectangels.filter(item => (
-            (itemSelect.x + 2 > item.x && itemSelect.x + 2 < (item.x + item.width)) &&
-            (itemSelect.y + 2 + itemSelect.height > item.y && itemSelect.y + itemSelect.height + 2 < (item.y + item.height)) && item?.type !== 'frame'
-         )
-         )[0]
-
-
-         // прямоугольнику вверху
-         const itemsUp = state.Rectangels.filter(item => (item.x >= itemSelect.x) && ((item.x + item.width) <= (itemSelect.x + itemSelect.width)) &&
-            ((item.y + item.height) === itemSelect.y) &&
-            item?.type !== 'frame'
-         )
-
-         // рамки вверху
-         const itemsFrameUp = state.Rectangels.filter(item => (
-            (item.x > itemSelect.x && (item.x + item.width) < (itemSelect.x + itemSelect.width))
-            &&
-            ((item.y + item.height) === itemSelect.y) && item?.type === 'frame'
-         )
-         )
-
-         // максимальная высота рамки снизу
-         const max = itemsFrameDown.length > 0 && itemsFrameDown?.reduce((acc, curr) => acc?.height > curr?.height ? acc : curr);
-
-
-         // область поиска в которой ищутся все, что нужно удалить
-         const searchArea = { x: itemSelect.x, y: itemSelect.y + itemSelect.height, width: itemSelect.width, height: max.height }
-
-
-         const deleteRec = state.Rectangels.filter(item =>
-            item?.x >= searchArea?.x && item?.x < (searchArea?.x + searchArea?.width) &&
-            item?.y >= searchArea?.y && item?.y < (searchArea?.y + searchArea?.height))
-
-
-         // если нет рамок снизу 
-
-         if (itemsFrameDown.length === 0) {
-            state.Rectangels = state.Rectangels.map(item => {
-               if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
-                  return { ...item, height: item.height + itemSelect.height + itemDown.height }
-               } else {
-                  return item
-               }
-            }).filter(item => item.id !== itemDown.id)
-
-         }
-         else {
-            // если рамка внизу есть 
-            state.Rectangels = state.Rectangels.map(item => {
-               if (item.id === itemSelect.id) {
-                  return { ...item, width: 0, height: 0, }
-               }
-               else if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
-                  return { ...item, height: item.height + max.height + itemSelect.height, }
-               } else {
-                  return item
-               }
-            }).filter(item => !deleteRec.includes(item))
-
-
-         }
-
-         state.elements = state.elements.map(item => {
-            if (item.id === itemSelect.id) {
-               return { ...item, width: 0, height: 0 }
-            }
-            else {
-               return item
-            }
-         })
 
       },
       DragStartHanger(state, action) {
@@ -708,20 +701,25 @@ const mainRectanglesSlice = createSlice({
       },
       onBlurInputVertical(state, action) {
 
-         console.log('onBlurVertica')
-
          let { value, containerDiv, wrap, itemSelect, height } = action.payload
 
          containerDiv.removeChild(wrap);
 
 
-         const FrameDown = state.Rectangels.filter(item => (
+         const FrameDown = state.Rectangels.find(item => (
 
             ((item.y) === (itemSelect.y + height))
             &&
-            ((item.x < itemSelect.x) && ((item.x + item.width) > (itemSelect.x + itemSelect.width)))
+            ((item.x < itemSelect.x) && ((item.x + item.width) > (itemSelect.x + itemSelect.width))) && item.type === 'frame'
          )
-         )[0]
+         )
+         const ShadowFrameDown = state.Rectangels.find(item => (
+
+            ((item.y) === (itemSelect.y + height))
+            &&
+            ((item.x < itemSelect.x) && ((item.x + item.width) > (itemSelect.x + itemSelect.width))) && item.type === 'shadowframe'
+         )
+         )
 
 
 
@@ -758,7 +756,10 @@ const mainRectanglesSlice = createSlice({
                   else if (itemsDown.includes(item)) {
                      return { ...item, y: item.y + changeValue, height: item.height - changeValue, }
                   }
-                  else if (item === FrameDown) {
+                  else if (item.id === FrameDown.id) {
+                     return { ...item, y: item.y + changeValue }
+                  }
+                  else if (item.id === ShadowFrameDown.id) {
                      return { ...item, y: item.y + changeValue }
                   }
                   else {
@@ -789,12 +790,17 @@ const mainRectanglesSlice = createSlice({
 
          containerDiv.removeChild(wrap);
 
-         const FrameRight = state.Rectangels.filter(item => (
-
+         const FrameRight = state.Rectangels.find(item => (
             ((item.x) === (itemSelect.x + width)) &&
-            ((item.y < itemSelect.y) && ((item.y + item.height) > (itemSelect.y + itemSelect.height)))
+            ((item.y < itemSelect.y) && ((item.y + item.height) > (itemSelect.y + itemSelect.height))) && item.type === 'frame'
          )
-         )[0]
+         )
+         const ShadowFrameRight = state.Rectangels.find(item => (
+            ((item.x) === (itemSelect.x + width)) &&
+            ((item.y < itemSelect.y) && ((item.y + item.height) > (itemSelect.y + itemSelect.height))) && item.type === 'shadowframe'
+         )
+         )
+
 
          let changeValue = 0
 
@@ -820,6 +826,7 @@ const mainRectanglesSlice = createSlice({
 
 
             if (itemSelect.width + changeValue < itemSelect.width + minWidth) {
+
                state.Rectangels = state.Rectangels.map(item => {
                   if (itemsLeftFrame.includes(item)) {
                      return { ...item, width: item.width + changeValue, }
@@ -827,28 +834,27 @@ const mainRectanglesSlice = createSlice({
                   else if (itemsRightFrame.includes(item)) {
                      return { ...item, x: item.x + changeValue, width: item.width - changeValue, }
                   }
-                  else if (item === FrameRight) {
+                  else if (item.id === FrameRight.id) {
+                     return { ...item, x: item.x + changeValue }
+                  }
+                  else if (item.id === ShadowFrameRight.id) {
                      return { ...item, x: item.x + changeValue }
                   }
                   else {
                      return item
                   }
                })
-
 
                state.verticalFrames = state.verticalFrames.map(item => {
-                  if (item.id === FrameRight.id) {
 
+                  if (item.id === FrameRight.id) {
                      return { ...item, x: item.x + changeValue }
                   }
                   else {
                      return item
                   }
                })
-
             }
-
-
          }
 
 
@@ -913,6 +919,7 @@ const mainRectanglesSlice = createSlice({
          } else if (widthClosetChange < minWidth) {
 
             if ((widthClosetChange / 5) < lastFrame + 50) {
+      
                state.Rectangels = state.Rectangels.map(item => {
                   if (lastItems.includes(item)) {
                      return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
@@ -935,7 +942,9 @@ const mainRectanglesSlice = createSlice({
                      return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
                   }
                })
+               
             } else {
+
                state.Rectangels = state.Rectangels.map(item => {
                   if (lastItems.includes(item)) {
                      return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
@@ -943,8 +952,6 @@ const mainRectanglesSlice = createSlice({
                      return item
                   }
                })
-
-
                state.mainBackRectangles = state.mainBackRectangles.map(item => {
                   if (item?.changeType === 'up' || item?.changeType === 'down') {
                      item.points[2] = item.points[2] + (minWidth / 5 - widthCloset)

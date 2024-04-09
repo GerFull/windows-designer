@@ -11,7 +11,7 @@ function Rectangle(props) {
 
    function checkClick() {
 
-      if (type === 'frame') {
+      if (type === 'shadowframe') {
          clickCheck(this)
       }
    }

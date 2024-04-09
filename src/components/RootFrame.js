@@ -16,7 +16,7 @@ import {
   changeSizeWidthMain, changeSizeHeightMain,
   changeColorMain, changeVisionMainWall,
   changeTextureMain, changeSizeMainWall,
-  createNewBurb, DragStarElement,
+  createNewBurb,
   createHanger, createSideHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
   changeWallInside, changeVisibableUp,
@@ -41,7 +41,7 @@ import UrlImage from "./Figures/UrlImage";
 
 
 // скрыть админку
-// Stroke рамое меняется при установке новый рядом
+
 
 // переделать SelectdeRectId сделать его глобальным
 // сделать ограничения по изменению ширины и высоты рамок
@@ -56,9 +56,11 @@ import UrlImage from "./Figures/UrlImage";
 // документация подписать за что отвечает каждый блок
 // попробывать использовать useCallback для dragOver
 
+
+
 // менять x у элементов при увеличении ширины левой стенки
-
-
+// дно и потолок
+// баг с рамкой убирается ток тень, остается белая основа( баг остался при изменении положения рамки в Metrics)
 
 
 const FRAME_SIZE = 5;
@@ -93,12 +95,11 @@ function RootFrame() {
   const navigate = useNavigate()
 
   const [widthClosetChange, setWidthClosetChange] = useState(widthCloset * 5)
-
   const [heightClosetChange, setHeightClosetChange] = useState(heightCloset * 5)
-
   const [widthLeftWallChange, setWidthLeftWallChange] = useState(widthLeftWall * 5)
-
   const [widthRightWallChange, setWidthRightWallChange] = useState(widthRightWall * 5)
+
+  const [widthCanvas, setWidthCanvas] = useState(widthCloset + widthRightWall + 300)
 
   const [colorValue, setColorValue] = useState(0)
 
@@ -123,42 +124,45 @@ function RootFrame() {
     e.preventDefault();
 
 
+
+
     if (selectedRectId !== null) {
+
 
       if (Rectangels.includes(selectedRectId)) {
         setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
         if (derection === '1') {
           dispatch(
             createVertical(
-              { xk: e.layerX - 100, yk: e.layerY - 100, widthLeftWall: widthLeftWall }
+              { xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall: widthLeftWall }
             )
           )
         }
         if (derection === '2') {
           dispatch(
             createHorizontal(
-              { xk: e.layerX - 100, yk: e.layerY - 100, selectedRectId: selectedRectId }
+              { xk: e.layerX - 100, yk: e.layerY - 50, selectedRectId: selectedRectId }
             )
           )
         }
         if (derection === '3') {
           dispatch(
-            createNewBurb({ xk: e.layerX - 100, yk: e.layerY - 100 })
+            createNewBurb({ xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall, widthCloset })
           )
         }
         if (derection === '4') {
           dispatch(
-            createHanger({ xk: e.layerX - 100, yk: e.layerY - 100, widthLeftWall: widthLeftWall })
+            createHanger({ xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall: widthLeftWall })
           )
         }
         if (derection === '5') {
           dispatch(
-            createSideHanger({ xk: e.layerX - 100, yk: e.layerY - 100, widthCloset: widthCloset })
+            createSideHanger({ xk: e.layerX - 100, yk: e.layerY - 50, widthCloset: widthCloset })
           )
         }
         if (derection === '6') {
           dispatch(
-            createDrawer({ xk: e.layerX - 100, yk: e.layerY - 100, widthCloset: widthCloset })
+            createDrawer({ xk: e.layerX - 100, yk: e.layerY - 50, widthCloset: widthCloset })
           )
         }
       }
@@ -167,13 +171,13 @@ function RootFrame() {
 
         dispatch(
           createHorizontalLeft(
-            { xk: e.layerX - 100, yk: e.layerY - 100, }
+            { xk: e.layerX - 100, yk: e.layerY - 50, }
           )
         )
       } else if (RightRectangels.includes(selectedRectId) && RightWall && derection === '2') {
         dispatch(
           createHorizontalRight(
-            { xk: e.layerX - 100, yk: e.layerY - 100, }
+            { xk: e.layerX - 100, yk: e.layerY - 50, }
           )
         )
       }
@@ -194,9 +198,17 @@ function RootFrame() {
 
     e.preventDefault();
     const x = e.layerX - 100
-    const y = e.layerY - 100
+    const y = e.layerY - 50
 
-    const newArr = [...Rectangels, ...leftRectangels, ...RightRectangels]
+    let newArr = [...Rectangels]
+
+    if (LeftWall && RightWall) {
+      newArr = [...Rectangels, ...leftRectangels, ...RightRectangels]
+    } else if (RightWall) {
+      newArr = [...Rectangels, ...RightRectangels]
+    } else if (LeftWall) {
+      newArr = [...Rectangels, ...leftRectangels]
+    }
 
     const item = newArr.filter(item => (
       (x > item.x && x < (item.x + item.width)) &&
@@ -207,6 +219,7 @@ function RootFrame() {
     if (item !== undefined) {
 
       setSelectedRectId(item)
+
       switch (derection) {
         case '1':
           // dispatch(checkIntercetion({ element: { width: FRAME_SIZE, height: item.height, x: x, y: item.y } }))
@@ -252,9 +265,6 @@ function RootFrame() {
 
 
   useEffect(() => {
-
-
-
     const con = stageRef.current.container()
     con.addEventListener('dragover', dragover)
 
@@ -269,19 +279,20 @@ function RootFrame() {
 
 
 
-  const onDragEndMain = (x, y, id, derection) => {
+  const onDragEndMain = (x, y, shadowid, mainId, derection) => {
+
     setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
     if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < y + heightCloset)) {
 
       if (derection === 1) {
-        dispatch(createVertical({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall }))
+        dispatch(createVertical({ xk: x, yk: y, shadowid, mainId, widthLeftWall: widthLeftWall }))
       } else {
-        dispatch(createHorizontal({ xk: x, yk: y, idd: id }))
+        dispatch(createHorizontal({ xk: x, yk: y, shadowid, mainId }))
       }
 
     } else {
-      dispatch(deleteRectangle({ id: id }))
+      dispatch(deleteRectangle({ id: shadowid }))
     }
   }
 
@@ -295,7 +306,7 @@ function RootFrame() {
 
       switch (type) {
         case 'element':
-          dispatch(createNewBurb({ xk: x, yk: y, idd: id }))
+          dispatch(createNewBurb({ xk: x, yk: y, idd: id, widthLeftWall, widthCloset }))
           break;
         case 'hanger':
           dispatch(createHanger({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall }))
@@ -311,9 +322,7 @@ function RootFrame() {
 
 
     } else {
-      console.log('за пределами')
 
-      // сделать удаление элемента
       dispatch(deleteElement({ id: id }))
     }
 
@@ -326,7 +335,7 @@ function RootFrame() {
     switch (type) {
       case 'element':
         setDerection('3')
-        dispatch(DragStarElement({ itemSelect: item }))
+        dispatch(DragStartHanger({ itemSelect: item }))
         break;
       case 'hanger':
         setDerection('4')
@@ -336,7 +345,7 @@ function RootFrame() {
         setDerection('6')
         dispatch(DragStartHanger({ itemSelect: item }))
         break;
-    
+
       default:
         break;
     }
@@ -388,6 +397,8 @@ function RootFrame() {
 
 
   function clickCheck(props) {
+
+    // console.log(props.attrs)
 
     if (props.attrs.type === "drawer") {
       createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
@@ -464,6 +475,11 @@ function RootFrame() {
 
 
   const changeSizeWidth = () => {
+
+
+
+    // setWidthCanvas(widthCanvas+((widthClosetChange / 5) - widthCloset))
+
     const copyVerticalFrames = [...verticalFrames]
 
     const lastFrame = copyVerticalFrames.sort((itme1, item2) => itme1?.x > item2?.x ? -1 : 1)[0]?.x
@@ -477,36 +493,35 @@ function RootFrame() {
 
     if (widthClosetChange > maxWidth) {
 
-
       dispatch(changeWidth(maxWidth / 5))
       setWidthClosetChange(maxWidth)
-
-
+      setWidthCanvas(widthCanvas + (maxWidth / 5 - widthCloset))
 
     } else if (widthClosetChange < minWidth) {
 
       if ((widthClosetChange / 5) < lastFrame + 50) {
 
-
+        dispatch(changeWidth((lastFrame + 50)))
+        setWidthClosetChange((lastFrame + 50) * 5)
+        setWidthCanvas(widthCanvas + ((lastFrame + 50) - widthCloset))
       } else {
         dispatch(changeWidth(minWidth / 5))
         setWidthClosetChange(minWidth)
+        setWidthCanvas(widthCanvas + (minWidth / 5 - widthCloset))
 
       }
 
     } else {
-
       if ((widthClosetChange / 5) < lastFrame + 50) {
-
-
         dispatch(changeWidth((lastFrame + 50)))
         setWidthClosetChange((lastFrame + 50) * 5)
+        setWidthCanvas(widthCanvas + ((lastFrame + 50) - widthCloset))
 
-      }
-      else {
-
+      } else {
 
         dispatch(changeWidth((widthClosetChange / 5)))
+        setWidthClosetChange((widthClosetChange))
+        setWidthCanvas(widthCanvas + ((widthClosetChange / 5) - widthCloset))
       }
 
 
@@ -514,6 +529,8 @@ function RootFrame() {
 
   }
 
+
+  // console.log(Rectangels)
 
   const changeSizeHeight = () => {
 
@@ -770,16 +787,15 @@ function RootFrame() {
 
 
       <Stage
-        // width={widthCloset+300}
-        width={1400}
-        height={1000}
+        width={widthCanvas}
+        height={700}
         ref={stageRef}
         onClick={(e) => handleClick(e)}
         id="container"
         className={style.container}
       >
 
-        <Layer x={100} y={100} ref={LayerRef} >
+        <Layer x={100} y={50} ref={LayerRef} >
           <Group visible={LeftWall}
           >
             {
@@ -907,7 +923,7 @@ function RootFrame() {
                   type={item.type}
                   onDragStart={() => dispatch(DragStarHorizontalLeft({ itemSelect: item }))}
                   texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndLeft(e.evt.layerX - 100, e.evt.layerY - 100, item.id)}
+                  onDragEnd={(e) => onDragEndLeft(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
                 />
               )
             }
@@ -923,14 +939,14 @@ function RootFrame() {
                   key={item.id}
                   width={item.width}
                   height={item.height}
-                  fill={item.color || 'black'}
-                  // fill={item.color}
+                  // fill={item.color || 'black'}
+                  fill={item.color}
                   listening={false}
                   x={item.x}
                   y={item.y}
                   id={item.id}
-                  // stroke="black"
-                  stroke='white'
+                  stroke="black"
+                  // stroke='white'
                   opacity={item?.opacity}
                   clickCheck={clickCheck}
                   derection={item?.derection}
@@ -941,7 +957,7 @@ function RootFrame() {
                   dragover={dragover}
                   onDragStart={() => onDragStartFrame(item)}
                   texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 100, item.id, item.derection)}
+                  onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.frameID, item.derection)}
                 />
               )
             }
@@ -966,7 +982,7 @@ function RootFrame() {
                   dragover={dragover}
                   clickCheck={clickCheck}
                   onDragStart={() => onDragStartElements(item.type, item)}
-                  onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 100, item.id, item.type)}
+                  onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.type)}
                 />
 
               )
@@ -1001,7 +1017,7 @@ function RootFrame() {
                   type={item.type}
                   onDragStart={() => dispatch(DragStarHorizontalRight({ itemSelect: item }))}
                   texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndRight(e.evt.layerX - 100, e.evt.layerY - 100, item.id)}
+                  onDragEnd={(e) => onDragEndRight(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
                 />
               )
             }
