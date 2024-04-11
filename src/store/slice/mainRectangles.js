@@ -127,7 +127,7 @@ const mainRectanglesSlice = createSlice({
    initialState,
    reducers: {
       createVertical(state, action) {
-         const { xk, yk, shadowid,mainId, widthLeftWall } = action.payload
+         const { xk, yk, shadowid, mainId, widthLeftWall } = action.payload
          const idFrame = id()
          const idShadowFrame = id()
 
@@ -143,7 +143,6 @@ const mainRectanglesSlice = createSlice({
             x: xk,
             y: itemSelect?.y,
             type: 'frame',
-
             draggable: true, derection: 1
          }
 
@@ -177,7 +176,7 @@ const mainRectanglesSlice = createSlice({
 
 
             state.verticalFrames = [...state.verticalFrames,
-            { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, color: state.colorMain, x: xk - widthLeftWall, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 }]
+            { id: idFrame, width: FRAME_SIZE, shadowFrameId: idShadowFrame, height: itemSelect.height, color: state.colorMain, x: xk - widthLeftWall, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 }]
 
             state.Rectangels = newsect
 
@@ -186,21 +185,19 @@ const mainRectanglesSlice = createSlice({
 
       },
       createHorizontal(state, action) {
-         const { xk, yk, shadowid,mainId } = action.payload
+         const { xk, yk, shadowid, mainId } = action.payload
 
          const idFrame = id()
          const idShadowFrame = id()
          let intersected = false;
 
 
-         console.log(shadowid)
-         console.log(mainId)
-
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
          const newFrame = {
             id: idFrame,
+
             width: itemSelect.width,
             height: FRAME_SIZE,
             color: state.colorMain,
@@ -242,7 +239,7 @@ const mainRectanglesSlice = createSlice({
 
 
             state.horizontalFrames = [...state.horizontalFrames,
-            { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
+            { id: idFrame, width: itemSelect.width, shadowFrameId: idShadowFrame, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
 
 
             state.Rectangels = newsect
@@ -919,7 +916,7 @@ const mainRectanglesSlice = createSlice({
          } else if (widthClosetChange < minWidth) {
 
             if ((widthClosetChange / 5) < lastFrame + 50) {
-      
+
                state.Rectangels = state.Rectangels.map(item => {
                   if (lastItems.includes(item)) {
                      return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
@@ -942,7 +939,7 @@ const mainRectanglesSlice = createSlice({
                      return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
                   }
                })
-               
+
             } else {
 
                state.Rectangels = state.Rectangels.map(item => {
@@ -1222,6 +1219,8 @@ const mainRectanglesSlice = createSlice({
          state.Rectangels = state.Rectangels.map(item => {
             if (item.id === itemSelect.id) {
                return { ...item, y: item.y + ((valueInput / 5) - value) }
+            } else if (item.id === itemSelect.shadowFrameId) {
+               return { ...item, y: item.y + ((valueInput / 5) - value) }
             }
             else if (itemsUp.includes(item)) {
                return { ...item, height: item.height + ((valueInput / 5) - value), }
@@ -1237,6 +1236,8 @@ const mainRectanglesSlice = createSlice({
          state.horizontalFrames = state.horizontalFrames.map(item => {
             if (item.id === itemSelect.id) {
                return { ...item, y: item.y + ((valueInput / 5) - value) }
+            } else if (item.id === itemSelect.shadowFrameId) {
+               return { ...item, y: item.y + ((valueInput / 5) - value) }
             }
             else {
                return item
@@ -1245,6 +1246,7 @@ const mainRectanglesSlice = createSlice({
 
       },
       changeVerticalFrames(state, action) {
+
          const { itemSelect, value, valueInput, widthLeftWall } = action.payload
 
          const itemsLeft = state.Rectangels.filter(item => (
@@ -1262,6 +1264,8 @@ const mainRectanglesSlice = createSlice({
          state.Rectangels = state.Rectangels.map(item => {
             if (item.id === itemSelect.id) {
                return { ...item, x: item.x + ((valueInput / 5) - value) }
+            } else if (item.id === itemSelect.shadowFrameId) {
+               return { ...item, x: item.x + ((valueInput / 5) - value) }
             }
             else if (itemsLeft.includes(item)) {
                return { ...item, width: item.width + ((valueInput / 5) - value), }
@@ -1276,6 +1280,8 @@ const mainRectanglesSlice = createSlice({
 
          state.verticalFrames = state.verticalFrames.map(item => {
             if (item.id === itemSelect.id) {
+               return { ...item, x: item.x + ((valueInput / 5) - value) }
+            } else if (item.id === itemSelect.shadowFrameId) {
                return { ...item, x: item.x + ((valueInput / 5) - value) }
             }
             else {
@@ -1379,6 +1385,10 @@ const mainRectanglesSlice = createSlice({
                return { ...item, x: item.x + changeValue }
             }
          })
+
+         state.elements = state.elements.map(item => {
+            return { ...item, x: item.x + changeValue }
+         })
       },
       changeWallInside(state, action) {
 
@@ -1473,6 +1483,77 @@ const mainRectanglesSlice = createSlice({
          }
 
       },
+      changeVisibableDown(state, action) {
+
+         const { value } = action.payload
+
+
+         if (!value) {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+
+
+               switch (item.changeType) {
+                  case 'down':
+                     item.fill = 'white'
+                     item.points[1] = item.points[1] + 5
+                     item.points[3] = item.points[3] + 5
+                     item.points[5] = item.points[5] + 5
+                     item.points[7] = item.points[7] + 5
+                     return item
+
+                  case 'left':
+                     item.points[5] = item.points[5] + 5
+                     item.points[7] = item.points[7] + 5
+                     return item
+
+                  case 'right':
+                     item.points[5] = item.points[5] + 5
+                     item.points[7] = item.points[7] + 5
+                     return item
+                  case 'main':
+       
+                     item.height = item.height + 5
+                     return item
+                  default:
+                     return item
+               }
+
+
+            })
+         } else {
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+
+
+               switch (item.changeType) {
+                  case 'down':
+                     item.fill = colorMain
+                     item.points[1] = item.points[1] - 5
+                     item.points[3] = item.points[3] - 5
+                     item.points[5] = item.points[5] - 5
+                     item.points[7] = item.points[7] - 5
+                     return item
+
+                  case 'left':
+                     item.points[5] = item.points[5] - 5
+                     item.points[7] = item.points[7] - 5
+                     return item
+
+                  case 'right':
+                     item.points[5] = item.points[5] - 5
+                     item.points[7] = item.points[7] - 5
+                     return item
+                  case 'main':
+                     item.height = item.height - 5
+                     return item
+                  default:
+                     return item
+
+               }
+
+            })
+         }
+
+      },
       checkIntercetion(state, action) {
 
          const { element } = action.payload
@@ -1507,7 +1588,7 @@ export const { createVertical, createHorizontal, createNewBurb,
    DragStartHanger, deleteElement,
    createDrawer, onBlurInputDrawer,
    changeWallInside, changeVisibableUp,
-   checkIntercetion
+   checkIntercetion,changeVisibableDown
 } = mainRectanglesSlice.actions;
 
 

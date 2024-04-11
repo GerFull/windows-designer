@@ -20,7 +20,7 @@ import {
   createHanger, createSideHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
   changeWallInside, changeVisibableUp,
-  checkIntercetion
+  checkIntercetion, changeVisibableDown
 } from "../store/slice/mainRectangles";
 import {
   createHorizontalLeft, DragStarHorizontalLeft,
@@ -44,23 +44,17 @@ import UrlImage from "./Figures/UrlImage";
 
 
 // переделать SelectdeRectId сделать его глобальным
-// сделать ограничения по изменению ширины и высоты рамок
 
 
 
 // делать минус 100 так как layer сдвинули на 100 по x и y
-// баг с input выделение с выходом за пределы 
 // 1 пиксель 5мм
 
 
 // документация подписать за что отвечает каждый блок
 // попробывать использовать useCallback для dragOver
 
-
-
-// менять x у элементов при увеличении ширины левой стенки
-// дно и потолок
-// баг с рамкой убирается ток тень, остается белая основа( баг остался при изменении положения рамки в Metrics)
+// добавить тень левые и правые стенки
 
 
 const FRAME_SIZE = 5;
@@ -109,6 +103,7 @@ function RootFrame() {
   const [LeftInside, setLeftInside] = useState(true)
   const [RightInside, setRightInside] = useState(true)
   const [UpVisable, setUpVisable] = useState(true)
+  const [DownVisable, setDownVisable] = useState(true)
 
   const [textures, setTextures] = useState([])
 
@@ -122,9 +117,6 @@ function RootFrame() {
   const drop = (e) => {
 
     e.preventDefault();
-
-
-
 
     if (selectedRectId !== null) {
 
@@ -476,10 +468,6 @@ function RootFrame() {
 
   const changeSizeWidth = () => {
 
-
-
-    // setWidthCanvas(widthCanvas+((widthClosetChange / 5) - widthCloset))
-
     const copyVerticalFrames = [...verticalFrames]
 
     const lastFrame = copyVerticalFrames.sort((itme1, item2) => itme1?.x > item2?.x ? -1 : 1)[0]?.x
@@ -654,6 +642,10 @@ function RootFrame() {
     setUpVisable(value)
     dispatch(changeVisibableUp({ value, }))
   }
+  const changeDownVisable = (value) => {
+    setDownVisable(value)
+    dispatch(changeVisibableDown({ value }))
+  }
 
 
   const onDragStartFrame = (item) => {
@@ -674,7 +666,7 @@ function RootFrame() {
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       width: '100%', position: 'relative'
     }} id='1'>
-      <button onClick={() => navigate('/admin')}>admin</button>
+      {/* <button onClick={() => navigate('/admin')}>admin</button> */}
       <div style={{ display: 'flex', gap: '10px' }}>
 
         <div style={{
@@ -756,27 +748,31 @@ function RootFrame() {
           <div>
             <div>
               Задняя левая стенка
-              <input checked={LeftWall} onClick={e => changeLeftVisible(e.target.checked)} type="checkbox" />
+              <input checked={LeftWall} onChange={e => changeLeftVisible(e.target.checked)} type="checkbox" />
             </div>
             <div>
               Задняя правая стенка
-              <input checked={RightWall} onClick={e => changeRightVisible(e.target.checked)} type="checkbox" />
+              <input checked={RightWall} onChange={e => changeRightVisible(e.target.checked)} type="checkbox" />
             </div>
             <div>
               Задняя стенка
-              <input checked={MainWall} onClick={e => changeMainWall(e.target.checked)} type="checkbox" />
+              <input checked={MainWall} onChange={e => changeMainWall(e.target.checked)} type="checkbox" />
             </div>
             <div>
               Левая стенка
-              <input checked={LeftInside} onClick={e => changeLeftInside(e.target.checked)} type="checkbox" />
+              <input checked={LeftInside} onChange={e => changeLeftInside(e.target.checked)} type="checkbox" />
             </div>
             <div>
               Правая стенка
-              <input checked={RightInside} onClick={e => changeRightInside(e.target.checked)} type="checkbox" />
+              <input checked={RightInside} onChange={e => changeRightInside(e.target.checked)} type="checkbox" />
             </div>
             <div>
               Потолок
-              <input checked={UpVisable} onClick={e => changeUpVisable(e.target.checked)} type="checkbox" />
+              <input checked={UpVisable} onChange={e => changeUpVisable(e.target.checked)} type="checkbox" />
+            </div>
+            <div>
+              Дно
+              <input checked={DownVisable} onChange={e => changeDownVisable(e.target.checked)} type="checkbox" />
             </div>
           </div>
         </div>
@@ -921,6 +917,7 @@ function RootFrame() {
                   draggable={item.draggable || false}
                   strokeWidth={item.type === 'frame' && 0.3}
                   type={item.type}
+                  dragover={dragover}
                   onDragStart={() => dispatch(DragStarHorizontalLeft({ itemSelect: item }))}
                   texture={item?.texture && item?.texture}
                   onDragEnd={(e) => onDragEndLeft(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
@@ -1007,6 +1004,7 @@ function RootFrame() {
                   height={item.height}
                   fill={item.color || null}
                   x={item.x}
+                  dragover={dragover}
                   y={item.y}
                   id={item.id}
                   stroke="black"

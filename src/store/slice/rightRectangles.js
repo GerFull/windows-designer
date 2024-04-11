@@ -46,19 +46,47 @@ const rightRectangelsSlice = createSlice({
          const { xk, yk, idd } = action.payload
 
          const idFrame = id()
+         const idShadowFrame = id()
+
+
 
          const itemSelect = state.RightRectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
-
+            const newFrame = {
+               id: idFrame,
+   
+               width: itemSelect.width,
+               height: FRAME_SIZE,
+               color: state.colorMain,
+               texture: state.TextureMain,
+               x: itemSelect?.x, y: yk,
+               type: 'frame',
+               draggable: true,
+               derection: 2
+            }
+   
+            const shadowFrame = {
+               id: idShadowFrame,
+               idFrame: idFrame,
+               width: itemSelect.width,
+               type: 'shadowframe',
+               height: FRAME_SIZE,
+               color: 'black', opacity: 0.2,
+               x: itemSelect?.x,
+               y: yk, draggable: true,
+               derection: 2,
+               frameID: idFrame
+            }
          const newsect = [...state.RightRectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
          { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
-         { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, texture: state.TextureMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 },
+            newFrame,
+            shadowFrame,
          { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
 
 
          state.horizontalRightFrames = [...state.horizontalRightFrames,
-         { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
+         { id: idFrame, shadowFrameId: idShadowFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
 
 
          state.RightRectangels = newsect
@@ -69,7 +97,7 @@ const rightRectangelsSlice = createSlice({
 
          // переделать поиск не из всех прямугольников, а только этой области
 
-         state.horizontalRightFrames = state.horizontalRightFrames.filter(item => item.id !== itemSelect.id)
+         state.horizontalRightFrames = state.horizontalRightFrames.filter(item => item.id !== itemSelect.frameID)
 
          // прямоугольник внизу
          const itemDown = state.RightRectangels.filter(item => (
@@ -88,8 +116,9 @@ const rightRectangelsSlice = createSlice({
          state.RightRectangels = state.RightRectangels.map(item => {
             if (item.id === itemSelect.id) {
                return { ...item, width: 0, height: 0, }
-            }
-            else if (itemsUp.includes(item)) {
+            } else if (item.id === itemSelect.frameID) {
+               return { ...item, width: 0, height: 0, }
+            } else if (itemsUp.includes(item)) {
                return { ...item, height: item.height + FRAME_SIZE + itemDown.height }
             } else {
                return item

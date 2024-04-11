@@ -17,16 +17,16 @@ const initialState = {
       { id: 20, width: 100, height: heightCloset - 60, x: 0, y: 30 },
    ],
    leftBackRectangles: [
-      {id:111, x: 100, y: 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
-      {id:112, x: 100, y: 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', colorType: 'shadow' },
-      {id:113, x: 100, y: 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', colorType: 'main' },
+      { id: 111, x: 100, y: 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', colorType: 'main' },
+      { id: 112, x: 100, y: 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', colorType: 'shadow' },
+      { id: 113, x: 100, y: 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', colorType: 'main' },
 
 
-      { id:114,x: 100, y: heightCloset - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
-      { id:115,x: 100, y: heightCloset - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'shadow' },
-      { id:116,x: 100, y: heightCloset - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
+      { id: 114, x: 100, y: heightCloset - 30, fill: '#efcf9f', radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'main' },
+      { id: 115, x: 100, y: heightCloset - 30, fill: 'black', opacity: 0.2, radiusX: 100, radiusY: 30, type: 'line', changeType: 'down', colorType: 'shadow' },
+      { id: 116, x: 100, y: heightCloset - 34, fill: '#efcf9f', radiusX: 100, radiusY: 28, type: 'line', changeType: 'down', colorType: 'main' },
 
-      { id:117,x: 0, y: 30, width: 100, height: heightCloset - 60, fill: '#efcf9f', colorType: 'main' },
+      { id: 117, x: 0, y: 30, width: 100, height: heightCloset - 60, fill: '#efcf9f', colorType: 'main' },
    ],
    horizontalLeftFrames: [],
    colorMain: '#efcf9f',
@@ -43,19 +43,47 @@ const leftRectangelsSlice = createSlice({
          const { xk, yk, idd } = action.payload
 
          const idFrame = id()
+         const idShadowFrame = id()
 
          const itemSelect = state.leftRectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
+         const newFrame = {
+            id: idFrame,
+
+            width: itemSelect.width,
+            height: FRAME_SIZE,
+            color: state.colorMain,
+            texture: state.TextureMain,
+            x: itemSelect?.x, y: yk,
+            type: 'frame',
+            draggable: true,
+            derection: 2
+         }
+
+         const shadowFrame = {
+            id: idShadowFrame,
+            idFrame: idFrame,
+            width: itemSelect.width,
+            type: 'shadowframe',
+            height: FRAME_SIZE,
+            color: 'black', opacity: 0.2,
+            x: itemSelect?.x,
+            y: yk, draggable: true,
+            derection: 2,
+            frameID: idFrame
+         }
+
 
          const newsect = [...state.leftRectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
          { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
-         { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, texture: state.TextureMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 },
+            newFrame,
+            shadowFrame,
          { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
 
 
          state.horizontalLeftFrames = [...state.horizontalLeftFrames,
-         { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
+         { id: idFrame, width: itemSelect.width, shadowFrameId: idShadowFrame, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
 
 
          state.leftRectangels = newsect
@@ -64,7 +92,7 @@ const leftRectangelsSlice = createSlice({
 
          const { itemSelect } = action.payload
 
-         state.horizontalLeftFrames = state.horizontalLeftFrames.filter(item => item.id !== itemSelect.id)
+         state.horizontalLeftFrames = state.horizontalLeftFrames.filter(item => item.id !== itemSelect.frameID)
          // прямоугольник внизу
          const itemDown = state.leftRectangels.filter(item => (
             (itemSelect.x + 2 > item.x && itemSelect.x + 2 < (item.x + item.width)) &&
@@ -81,6 +109,8 @@ const leftRectangelsSlice = createSlice({
 
          state.leftRectangels = state.leftRectangels.map(item => {
             if (item.id === itemSelect.id) {
+               return { ...item, width: 0, height: 0, }
+            } else if (item.id === itemSelect.frameID) {
                return { ...item, width: 0, height: 0, }
             }
             else if (itemsUp.includes(item)) {
@@ -263,80 +293,80 @@ const leftRectangelsSlice = createSlice({
       },
       leftVisibleWall(state, action) {
 
-         const {widthLeftWall,heightCloset}=action.payload
+         const { widthLeftWall, heightCloset } = action.payload
 
-         state.leftRectangels=[{ id: 20, width: widthLeftWall, height: heightCloset - 60, x: 0, y: 30 }]
-         state.horizontalLeftFrames=[]
+         state.leftRectangels = [{ id: 20, width: widthLeftWall, height: heightCloset - 60, x: 0, y: 30 }]
+         state.horizontalLeftFrames = []
       },
-      changeHorizontalLeftFrames(state,action){
+      changeHorizontalLeftFrames(state, action) {
 
-         const {value,valueInput,itemSelect,heightShow}=action.payload
+         const { value, valueInput, itemSelect, heightShow } = action.payload
 
 
          const itemsDown = state.leftRectangels.filter(item => (
             (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
             (item.y === (itemSelect.y + itemSelect.height))
-          )
-          )
-    
-          const itemsUp = state.leftRectangels.filter(item => (
+         )
+         )
+
+         const itemsUp = state.leftRectangels.filter(item => (
             (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
             ((item.y + item.height) === itemSelect.y)
-          )
-          )
-    
-    
-          if (heightShow !== undefined) {
-            state.leftRectangels=state.leftRectangels.map(item => {
-              if (item.id === itemSelect.id) {
-                return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
-              }
-              else if (itemsUp.includes(item)) {
-                return { ...item, height: item.height + (((valueInput - 150) / 5) - value), }
-              }
-              else if (itemsDown.includes(item)) {
-                return { ...item, y: item.y + (((valueInput - 150) / 5) - value), height: item.height - (((valueInput - 150) / 5) - value), }
-              }
-              else {
-                return item
-              }
+         )
+         )
+
+
+         if (heightShow !== undefined) {
+            state.leftRectangels = state.leftRectangels.map(item => {
+               if (item.id === itemSelect.id) {
+                  return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
+               }
+               else if (itemsUp.includes(item)) {
+                  return { ...item, height: item.height + (((valueInput - 150) / 5) - value), }
+               }
+               else if (itemsDown.includes(item)) {
+                  return { ...item, y: item.y + (((valueInput - 150) / 5) - value), height: item.height - (((valueInput - 150) / 5) - value), }
+               }
+               else {
+                  return item
+               }
             })
-    
-            state.horizontalLeftFrames=state.horizontalLeftFrames.map(item => {
-              if (item.id === itemSelect.id) {
-                return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
-              }
-              else {
-                return item
-              }
+
+            state.horizontalLeftFrames = state.horizontalLeftFrames.map(item => {
+               if (item.id === itemSelect.id) {
+                  return { ...item, y: item.y + (((valueInput - 150) / 5) - value) }
+               }
+               else {
+                  return item
+               }
             })
-   
-          } else {
-            state.leftRectangels=state.leftRectangels.map(item => {
-              if (item.id === itemSelect.id) {
-                return { ...item, y: item.y + (((valueInput) / 5) - value) }
-              }
-              else if (itemsUp.includes(item)) {
-                return { ...item, height: item.height + (((valueInput) / 5) - value), }
-              }
-              else if (itemsDown.includes(item)) {
-                return { ...item, y: item.y + (((valueInput) / 5) - value), height: item.height - (((valueInput) / 5) - value), }
-              }
-              else {
-                return item
-              }
+
+         } else {
+            state.leftRectangels = state.leftRectangels.map(item => {
+               if (item.id === itemSelect.id) {
+                  return { ...item, y: item.y + (((valueInput) / 5) - value) }
+               }
+               else if (itemsUp.includes(item)) {
+                  return { ...item, height: item.height + (((valueInput) / 5) - value), }
+               }
+               else if (itemsDown.includes(item)) {
+                  return { ...item, y: item.y + (((valueInput) / 5) - value), height: item.height - (((valueInput) / 5) - value), }
+               }
+               else {
+                  return item
+               }
             })
-    
-            state.horizontalLeftFrames=state.horizontalLeftFrames.map(item => {
-              if (item.id === itemSelect.id) {
-                return { ...item, y: item.y + (((valueInput) / 5) - value) }
-              }
-              else {
-                return item
-              }
+
+            state.horizontalLeftFrames = state.horizontalLeftFrames.map(item => {
+               if (item.id === itemSelect.id) {
+                  return { ...item, y: item.y + (((valueInput) / 5) - value) }
+               }
+               else {
+                  return item
+               }
             })
-     
-          }
+
+         }
       }
    },
 
@@ -349,7 +379,7 @@ export const {
    createHorizontalLeft, DragStarHorizontalLeft,
    deleteItemLeft, changeSizeHeightLeft,
    changeSizeLeftWall, changeColorLeft,
-   changeTextureLeft,leftVisibleWall,
+   changeTextureLeft, leftVisibleWall,
    changeHorizontalLeftFrames
 
 } = leftRectangelsSlice.actions;
