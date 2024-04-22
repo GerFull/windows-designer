@@ -5,12 +5,14 @@ import AdminPage from "./adminPage/adminPage";
 import TexturePage from "./TexturePage/texturePage";
 import CreateTexturePage from "./CreateTexurePage/CreateTexturePage";
 import DoorPage from "./doorPage/doorPage";
+import CostPage from "./CostPage/costPage";
 
 
 export default () => (
    <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/door" element={<DoorPage />} />
+      <Route path="/cost" element={<CostPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/:id" element={<TexturePage />} />
       <Route path="/admin/create" element={<CreateTexturePage />} />

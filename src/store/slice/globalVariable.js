@@ -9,6 +9,7 @@ const initialState = {
    minWidth: 2000,
    widthCloset: 600,
    heightCloset: 600,
+   depthCloset:140,
    widthLeftWall:100,
    widthRightWall:100,
    admin: false
@@ -38,6 +39,9 @@ const globalVariableSlice = createSlice({
       changeHeight(state, action) {
          state.heightCloset = Number(action.payload)
       },
+      changeDepth(state, action) {
+         state.depthCloset = Number(action.payload)
+      },
 
 
       replaceWidthRight(state, action) {
@@ -61,7 +65,7 @@ export const {
    changeMaxWidth, changeMinWidth,
    changeAdmin, changeWidth,
    changeHeight,replaceWidthRight,
-   replaceWidthLeft
+   replaceWidthLeft,changeDepth
 } = globalVariableSlice.actions;
 
 

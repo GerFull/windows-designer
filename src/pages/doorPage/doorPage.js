@@ -15,9 +15,7 @@ import {
 import MetricsDoors from "../../components/MetricsDoors";
 import UrlImage from "../../components/Figures/UrlImage";
 
-
-// скрыть админку
-// Stroke рамое меняется при установке новый рядом
+const FRAME_SIZE = 5;
 
 
 const colors = [{
@@ -37,7 +35,7 @@ const colors = [{
 
 function DoorPage() {
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-   const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames ,elements} = useSelector(store => store.mainRectangles)
+   const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements } = useSelector(store => store.mainRectangles)
    const { leftRectangels, leftBackRectangles } = useSelector(store => store.leftRectangels)
    const { RightRectangels, rightBackRectangles } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles } = useSelector(store => store.doors)
@@ -50,10 +48,11 @@ function DoorPage() {
 
    const navigate = useNavigate()
 
-
+   const [widthCanvas, setWidthCanvas] = useState(widthCloset + widthRightWall + 300)
    const [color, setColor] = useState(null)
    const [colorValue, setColorValue] = useState(3)
    const [countDoors, setCountDoors] = useState(3)
+   const [showObject, setShowObject] = useState({ fill: '#99ff99', opacity: 0.7, width: 10, height: 10, x: 0, y: 0 })
 
    const [LeftWall, setLeftWall] = useState(false)
    const [RightWall, setRightWall] = useState(false)
@@ -63,6 +62,11 @@ function DoorPage() {
    const LayerRef = useRef(null)
    const [selectedRectId, setSelectedRectId] = useState(null)
    const [derection, setDerection] = useState(null)
+
+
+   const [showMenu, setShowMenu] = useState(true)
+   const [showDoors, setShowDoors] = useState(false)
+   const [showPartition, setShowPartition] = useState(false)
 
 
 
@@ -103,14 +107,14 @@ function DoorPage() {
 
 
       if (selectedRectId !== null) {
-
+         setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
          if (derection !== null) {
             if (doorRectangles.includes(selectedRectId)) {
                if (derection === '1') {
-                  dispatch(createDoorsVertical({ xk: e.layerX - 100, yk: e.layerY - 100, widthLeftWall: widthLeftWall }))
+                  dispatch(createDoorsVertical({ xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall: widthLeftWall }))
                }
                if (derection === '2') {
-                  dispatch(createDoorsHorizontal({ xk: e.layerX - 100, yk: e.layerY - 100 }))
+                  dispatch(createDoorsHorizontal({ xk: e.layerX - 100, yk: e.layerY - 50 }))
                }
             }
             setDerection(null)
@@ -131,7 +135,7 @@ function DoorPage() {
 
       e.preventDefault();
       const x = e.layerX - 100
-      const y = e.layerY - 100
+      const y = e.layerY - 50
 
 
 
@@ -145,6 +149,14 @@ function DoorPage() {
 
          setSelectedRectId(item)
 
+         switch (derection) {
+            case '1':
+               setShowObject({ ...showObject, width: FRAME_SIZE, height: item.height, x: x, y: item.y })
+               break;
+            case '2':
+               setShowObject({ ...showObject, width: item.width, height: FRAME_SIZE, x: item.x, y: y })
+
+         }
       } else setSelectedRectId(null)
 
 
@@ -155,7 +167,7 @@ function DoorPage() {
 
    const onDragEndMain = (x, y, id, derection) => {
 
-
+      setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
       if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < y + heightCloset)) {
 
@@ -242,9 +254,6 @@ function DoorPage() {
 
    }
 
-   const handleClick = (e) => {
-      // console.log('click')
-   };
 
 
    const changeColor = (value) => {
@@ -259,331 +268,438 @@ function DoorPage() {
       setColorValue(value)
    }
 
+
+   const onDragStartFrame = (item) => {
+
+      if (item.derection === 1) {
+        setDerection('1')
+        dispatch(DragStarDoorsVertical({ itemSelect: item }))
+      } else {
+        setDerection('2')
+        dispatch(DragStarDoorsHorizontal({ itemSelect: item }))
+      }
+  
+  
+    }
+
    return (
-      <div style={{
-         display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-         width: '100%', position: 'relative'
-      }} id='1'>
-
-         <button onClick={() => navigate('/admin')}>admin</button>
-
-         <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => navigate(-1)} >Назад</button>
-            <div style={{
-               width: 'fit-content', border: '1px solid black'
-               , marginBottom: '20px'
-            }} draggable={true} onDragStart={(e) => setDerection('1')}>
-               <img src="./images/vertical.png" />
-            </div>
-
-            <div style={{
-               width: 'fit-content', border: '1px solid black'
-               , marginBottom: '20px'
-            }} draggable={true} onDragStart={() => setDerection('2')}>
-               <img src="./images/horizont.png" />
-            </div>
+      <div className={style.doorsPage} id='1'>
 
 
-            <div>
-               Количество дверей
-               <input type="number" step={1} min={1} max={10} value={countDoors} onChange={(e) => setCountDoors(Number(e.target.value))} />
-            </div>
-            <div>
-               Цвет рамки
-               <select value={colorValue} onChange={e => changeColor(e.target.value)}>
-                  <option value={0}>Стандартный</option>
-                  <option value={1}>Белый</option>
-                  <option value={2}>Синий</option>
-                  <option value={3}>Черный</option>
-               </select>
-            </div>
-            <div className={style.colors}>
+         <div className={style.doorsPage__container}>
+            <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png"/></div>
+            <Stage
+               width={widthCanvas}
+               height={700}
+               ref={stageRef}
+               id="container"
+               style={{ position: 'relative' }}
+            >
 
-               {colors.map(item =>
+               <Layer x={100} y={50} ref={LayerRef}
+                  listening={false}
+               >
+                  <Group visible={LeftWall}
+                  >
+                     {
+                        leftBackRectangles.map((item) => {
+                           if (item.type === 'line') {
+                              return <ElipseTexture
+                                 x={item.x}
+                                 y={item.y}
+                                 fill={item.fill}
+                                 radiusX={item.radiusX}
+                                 radiusY={item.radiusY}
+                                 stroke={1}
+                                 opacity={item.opacity}
+                                 strokeWidth={1}
+                                 texture={item.texture}
+                              />
+                           } else {
+                              return <Rectangle
+                                 width={item.width}
+                                 height={item.height}
+                                 fill={item.fill}
+                                 listening={false}
+                                 x={item.x}
+                                 y={item.y}
+                                 stroke="black"
+                                 opacity={item?.opacity}
+                                 strokeWidth={1}
+                                 texture={item?.texture && item?.texture}
+                              />
 
-                  <div draggable={true} onDragStart={(e) => setColor(item.mainColor)}>
-                     <div className={style.colors__item} style={{ backgroundColor: item.mainColor }} />
-                  </div>
-               )
+                           }
 
-               }
+                        })
+                     }
+                  </Group>
+                  <Group visible={RightWall}>
+                     {
+                        rightBackRectangles.map((item) => {
+                           if (item?.type === 'line') {
+                              return <ElipseTexture
+                                 x={item.x}
+                                 y={item.y}
+                                 fill={item.fill}
+                                 radiusX={item.radiusX}
+                                 radiusY={item.radiusY}
+                                 stroke={1}
+                                 opacity={item.opacity}
+                                 strokeWidth={1}
+                                 texture={item.texture}
+                              />
+                           } else {
+                              return <Rectangle
+                                 width={item.width}
+                                 height={item.height}
+                                 fill={item.fill}
+                                 listening={false}
+                                 x={item.x}
+                                 y={item.y}
+                                 stroke="black"
+                                 opacity={item?.opacity}
+                                 strokeWidth={1}
+                                 texture={item?.texture && item?.texture}
+                              />
 
-               {
-                  textures.map(item =>
-                     <div draggable={true} onDragStart={(e) => setColor(item.img)}>
-                        <img className={style.colors__item} src={`http://127.0.0.1:8000/${item.img}`} />
-                     </div>
-                  )
-               }
+                           }
+
+                        })
+                     }
+                  </Group>
+
+                  {
+                     mainBackRectangles.map((item) => {
+                        if (item?.type === 'line') {
+                           return <Poligon
+                              points={item.points}
+                              closed={true}
+                              tension={item.tension}
+                              fill={item.fill}
+                              stroke={'black'}
+                              texture={item?.texture}
+                              draggable={true}
+                           />
+                        } else {
+                           return <Rectangle
+                              width={item.width}
+                              height={item.height}
+                              fill={item.fill}
+                              listening={false}
+                              x={item.x}
+                              y={item.y}
+                              stroke="black"
+                              opacity={item?.opacity}
+                              strokeWidth={1}
+                              texture={item?.texture && item?.texture}
+                           />
+                        }
+                     })
+                  }
+                  {
+                     elements.map(item =>
+
+                        <UrlImage
+                           key={item.id}
+                           image={item}
+
+                        />
+
+                     )
+
+                  }
+
+                  <Group
+
+                  >
+                     {
+                        leftRectangels.map((item) =>
+
+                           <Rectangle
+                              key={item.id}
+                              width={item.width}
+                              height={item.height}
+                              fill={item.color || null}
+                              x={item.x}
+                              y={item.y}
+                              id={item.id}
+                              stroke="black"
+                              opacity={item?.opacity}
+                              derection={item?.derection}
+                              draggable={false}
+                              strokeWidth={item.type === 'frame' && 0.3}
+                              type={item.type}
+                              texture={item?.texture && item?.texture}
+                           />
+                        )
+                     }
+
+                  </Group>
+
+                  <Group
+                  >
+                     {
+                        Rectangels.map((item) =>
+
+                           <Rectangle
+                              key={item.id}
+                              width={item.width}
+                              height={item.height}
+                              fill={item.color}
+                              listening={false}
+                              x={item.x}
+                              y={item.y}
+                              id={item.id}
+                              stroke="black"
+                              opacity={item?.opacity}
+                              derection={item?.derection}
+                              draggable={false}
+                              strokeWidth={item.type === 'frame' && 0.3}
+                              type={item.type}
+                              texture={item?.texture && item?.texture}
+
+                           />
+                        )
+                     }
 
 
-            </div>
+
+
+                  </Group>
+                  <Group
+
+                  >
+                     {
+                        RightRectangels.map((item) =>
+
+                           <Rectangle
+                              key={item.id}
+                              width={item.width}
+                              height={item.height}
+                              fill={item.color || null}
+                              x={item.x}
+                              y={item.y}
+                              id={item.id}
+                              stroke="black"
+                              opacity={item?.opacity}
+                              derection={item?.derection}
+                              draggable={false}
+                              strokeWidth={item.type === 'frame' && 0.3}
+                              type={item.type}
+                              texture={item?.texture && item?.texture}
+                           />
+                        )
+                     }
+
+                  </Group>
+
+
+               </Layer>
+               <Layer x={100} y={50}>
+                  {
+                     doors.map(item =>
+
+                        <Rect
+                           x={item.x}
+                           y={2.5}
+                           stroke={item.stroke}
+                           listening={false}
+                           strokeWidth={5}
+                           width={(widthCloset / countDoors) - 5}
+                           height={heightCloset - 5}
+                        />
+                     )
+                  }
+                  {
+                     doorRectangles.map(rect =>
+
+                        <Rectangle
+                           key={rect.id}
+                           id={rect.id}
+                           x={rect.x}
+                           y={rect.y}
+                           fill={rect.color}
+                           opacity={rect.opacity}
+                           clickCheck={clickCheck}
+                           width={rect.width}
+                           strokeWidth={1}
+                           draggable={rect.draggable}
+                           height={rect.height}
+                           type={rect.type}
+                           dragover={dragover}
+                           derection={rect.derection}
+                           onDragStart={() => onDragStartFrame(rect)}
+                           texture={rect?.texture && rect?.texture}
+                           onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, rect.id, rect.derection)}
+                        />
+                     )
+                  }
+                  {
+                     selectedRectId && <Rectangle
+                        x={showObject.x}
+                        y={showObject.y}
+                        width={showObject.width}
+                        height={showObject.height}
+                        fill={'#99ff99'}
+                        opacity={showObject.opacity}
+
+                     />
+                  }
+                  <MetricsDoors width={widthCloset}
+                     height={heightCloset}
+                     widthLeftWall={widthLeftWall}
+                     widthRightWall={widthRightWall}
+                     LeftWall={LeftWall}
+                     RightWall={RightWall}
+                     countDoors={countDoors}
+                  />
+
+
+
+               </Layer>
+            </Stage>
+
+
          </div>
 
-
-
-         <Stage
-            width={1500}
-            height={1000}
-            ref={stageRef}
-            onClick={(e) => handleClick(e)}
-            id="container"
-            className={style.container}
-         >
-
-            <Layer x={100} y={100} ref={LayerRef}
-               listening={false}
-            >
-               <Group visible={LeftWall}
-               >
-                  {
-                     leftBackRectangles.map((item) => {
-                        if (item.type === 'line') {
-                           return <ElipseTexture
-                              x={item.x}
-                              y={item.y}
-                              fill={item.fill}
-                              radiusX={item.radiusX}
-                              radiusY={item.radiusY}
-                              stroke={1}
-                              opacity={item.opacity}
-                              strokeWidth={1}
-                              texture={item.texture}
-                           />
-                        } else {
-                           return <Rectangle
-                              width={item.width}
-                              height={item.height}
-                              fill={item.fill}
-                              listening={false}
-                              x={item.x}
-                              y={item.y}
-                              stroke="black"
-                              opacity={item?.opacity}
-                              strokeWidth={1}
-                              texture={item?.texture && item?.texture}
-                           />
-
-                        }
-
-                     })
-                  }
-               </Group>
-               <Group visible={RightWall}>
-                  {
-                     rightBackRectangles.map((item) => {
-                        if (item?.type === 'line') {
-                           return <ElipseTexture
-                              x={item.x}
-                              y={item.y}
-                              fill={item.fill}
-                              radiusX={item.radiusX}
-                              radiusY={item.radiusY}
-                              stroke={1}
-                              opacity={item.opacity}
-                              strokeWidth={1}
-                              texture={item.texture}
-                           />
-                        } else {
-                           return <Rectangle
-                              width={item.width}
-                              height={item.height}
-                              fill={item.fill}
-                              listening={false}
-                              x={item.x}
-                              y={item.y}
-                              stroke="black"
-                              opacity={item?.opacity}
-                              strokeWidth={1}
-                              texture={item?.texture && item?.texture}
-                           />
-
-                        }
-
-                     })
-                  }
-               </Group>
-
+         <div className={style.menu} style={{ backgroundColor: !showMenu ? 'white' : '#d9d9d9' }}>
+            <div>
                {
-                  mainBackRectangles.map((item) => {
-                     if (item?.type === 'line') {
-                        return <Poligon
-                           points={item.points}
-                           closed={true}
-                           tension={item.tension}
-                           fill={item.fill}
-                           stroke={'black'}
-                           texture={item?.texture}
-                           draggable={true}
-                        />
-                     } else {
-                        return <Rectangle
-                           width={item.width}
-                           height={item.height}
-                           fill={item.fill}
-                           listening={false}
-                           x={item.x}
-                           y={item.y}
-                           stroke="black"
-                           opacity={item?.opacity}
-                           strokeWidth={1}
-                           texture={item?.texture && item?.texture}
-                        />
-                     }
-                  })
+
+                  showMenu && <div className={style.menu__header}>
+                     <p className={style.menu__title}>Шкаф</p>
+                     <p className={style.menu__subtitle}>Стандратное описание</p>
+                  </div>
                }
+
                {
-              elements.map(item =>
 
-                <UrlImage
-                  key={item.id}
-                  image={item}
-                  
-                />
+                  showMenu &&
+                  <div className={style.menu__container}>
+                     <div onClick={() => {
+                        setShowMenu(false)
+                        setShowDoors(true)
+                     }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Двери</p></div>
+                     <div onClick={() => {
+                        setShowMenu(false)
+                        setShowPartition(true)
+                     }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Перегородки</p></div>
 
-              )
+                  </div>
+               }</div>
 
+
+            {
+               showDoors &&
+               <div className={style.menu__inputs}>
+                  <div>
+                     <div className={style.menu__inputSize}>
+
+                        <p className={style.menu__inputSize_title}>Двери</p>
+
+                        <div className={style.menu__inputSize_container}>
+
+                           <div className={style.menu__inputSize_item}>
+                              <p>Количество дверей</p>
+                              <input className={style.input__size} step={1} min={2} max={10} value={countDoors} onChange={(e) => setCountDoors(Number(e.target.value))} type="number" />
+
+                           </div>
+
+                        </div>
+
+                     </div>
+
+                     <p className={style.menu__colorsTitle}>Цвет рамки</p>
+
+                     <div className={style.menu__colorsContainer}>
+                        {
+                           colors.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                        }
+
+                     </div>
+
+
+
+                  </div>
+
+
+
+                  <div className={style.menu__btnContainer}>
+                     <div className={style.menu__backBtn} onClick={() => {
+                        setShowMenu(true)
+                        setShowDoors(false)
+                     }}><img src="./images/cross.png" /><p>Свернуть</p></div>
+                  </div>
+
+               </div>
             }
 
-               <Group
+            {
+               showPartition &&
+               <div className={style.menu__inputs}>
 
-               >
-                  {
-                     leftRectangels.map((item) =>
+                  <div>
+                     <div className={style.menu__inputSize}>
 
-                        <Rectangle
-                           key={item.id}
-                           width={item.width}
-                           height={item.height}
-                           fill={item.color || null}
-                           x={item.x}
-                           y={item.y}
-                           id={item.id}
-                           stroke="black"
-                           opacity={item?.opacity}
-                           derection={item?.derection}
-                           draggable={false}
-                           strokeWidth={item.type === 'frame' && 0.3}
-                           type={item.type}
-                           texture={item?.texture && item?.texture}
-                        />
-                     )
-                  }
+                        <p className={style.menu__inputSize_title}>Перегородки</p>
+                        <div className={style.menu__partitionContainer}>
+                           <div className={style.menu__partitionItem} >
+                              <img draggable={true} onDragStart={() => setDerection('1')} src="./images/vertical.png" />
+                              <p>Вертикальная перегородка</p>
+                           </div>
 
-               </Group>
+                           <div className={style.menu__partitionItem}>
+                              <img draggable={true} onDragStart={() => setDerection('2')} src="./images/horizont.png" />
+                              <p>Горизонталная перегородка</p>
+                           </div>
+                        </div>
 
-               <Group
-               >
-                  {
-                     Rectangels.map((item) =>
 
-                        <Rectangle
-                           key={item.id}
-                           width={item.width}
-                           height={item.height}
-                           fill={item.color}
-                           listening={false}
-                           x={item.x}
-                           y={item.y}
-                           id={item.id}
-                           stroke="black"
-                           opacity={item?.opacity}
-                           derection={item?.derection}
-                           draggable={false}
-                           strokeWidth={item.type === 'frame' && 0.3}
-                           type={item.type}
-                           texture={item?.texture && item?.texture}
+                     </div>
+                     <div >
+                        <p className={style.menu__colorsTitle}>Цвета дверей</p>
+                        <div className={style.menu__colors}>
+                           {colors.map(item =>
 
-                        />
-                     )
-                  }
+                              <div draggable={true} onDragStart={() => setColor(item.mainColor)}>
+                                 <div className={style.menu__colors_item} style={{ backgroundColor: item.mainColor }} />
+                              </div>
+                           )
+
+                           }
+
+                           {
+                              textures.map(item =>
+                                 <div draggable={true} onDragStart={() => setColor(item.img)}>
+                                    <img className={style.menu__colors_item} src={`http://127.0.0.1:8000/${item.img}`} />
+                                 </div>
+                              )
+                           }
+
+                        </div>
 
 
 
+                     </div>
+                  </div>
 
-               </Group>
-               <Group
+                  <div className={style.menu__btnContainer}>
+                     <div className={style.menu__backBtn} onClick={() => {
+                        setShowMenu(true)
+                        setShowPartition(false)
+                     }}><img src="./images/cross.png" /><p>Свернуть</p></div>
+                  </div>
+               </div>
+            }
 
-               >
-                  {
-                     RightRectangels.map((item) =>
+            {/* {showMenu && 
+            <div className={style.menu__btnContainer}>
+               <div className={style.menu__backBtn} onClick={() => navigate('/cost')}><p>Далее</p></div>
+            </div>
+            } */}
+         </div>
 
-                        <Rectangle
-                           key={item.id}
-                           width={item.width}
-                           height={item.height}
-                           fill={item.color || null}
-                           x={item.x}
-                           y={item.y}
-                           id={item.id}
-                           stroke="black"
-                           opacity={item?.opacity}
-                           derection={item?.derection}
-                           draggable={false}
-                           strokeWidth={item.type === 'frame' && 0.3}
-                           type={item.type}
-                           texture={item?.texture && item?.texture}
-                        />
-                     )
-                  }
-
-               </Group>
-
-
-            </Layer>
-            <Layer x={100} y={100}>
-               {
-                  doors.map(item =>
-
-                     <Rect
-                        x={item.x}
-                        y={2.5}
-                        stroke={item.stroke}
-                        listening={false}
-                        strokeWidth={5}
-                        width={(widthCloset / countDoors) - 5}
-                        height={heightCloset - 5}
-                     />
-                  )
-               }
-               {
-                  doorRectangles.map(rect =>
-
-                     <Rectangle
-                        key={rect.id}
-                        id={rect.id}
-                        x={rect.x}
-                        y={rect.y}
-                        fill={rect.color}
-                        opacity={rect.opacity}
-                        clickCheck={clickCheck}
-                        width={rect.width}
-                        strokeWidth={1}
-                        draggable={rect.draggable}
-                        height={rect.height}
-                        type={rect.type}
-                        derection={rect.derection}
-                        onDragStart={rect.derection === 1
-                           ? () => dispatch(DragStarDoorsVertical({ itemSelect: rect }))
-                           : () => dispatch(DragStarDoorsHorizontal({ itemSelect: rect }))}
-                        texture={rect?.texture && rect?.texture}
-                        onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 100, rect.id, rect.derection)}
-                     />
-                  )
-               }
-               <MetricsDoors width={widthCloset}
-                  height={heightCloset}
-                  widthLeftWall={widthLeftWall}
-                  widthRightWall={widthRightWall}
-                  LeftWall={LeftWall}
-                  RightWall={RightWall}
-                  countDoors={countDoors}
-               />
-
-
-
-            </Layer>
-         </Stage>
       </div>
    );
 }

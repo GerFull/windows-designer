@@ -5,6 +5,8 @@ import { changeHorizontalFrames, changeVerticalFrames } from "../store/slice/mai
 import { changeHorizontalLeftFrames } from "../store/slice/leftRectangles";
 import { changeHorizontalRightFrames } from "../store/slice/rightRectangles";
 
+
+
 const METRIC_SIZE = 25;
 const FRAME_SIZE = 3;
 
@@ -208,6 +210,7 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
       input.type = 'number';
 
       input.style.position = 'absolute';
+
       input.style.top = pos.y + 3 + 'px';
       input.style.left = pos.x + 'px';
 

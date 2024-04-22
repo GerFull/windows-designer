@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { changeHorizontalFrames, changeVerticalFrames } from "../store/slice/mainRectangles";
 import { changeHorizontalLeftFrames } from "../store/slice/leftRectangles";
 import { changeHorizontalRightFrames } from "../store/slice/rightRectangles";
+import style from '../css/RootFrame.module.scss'
 
 const METRIC_SIZE = 25;
 const FRAME_SIZE = 3;
@@ -58,10 +59,10 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
     input.type = 'number';
 
     input.style.position = 'absolute';
-    input.style.top = pos.y + 3 + 'px';
-    input.style.left = pos.x + 'px';
-
-    input.style.height = 20 + 3 + 'px';
+    input.style.top = pos.y - 3 + 'px';
+    input.style.left = pos.x - 10 + 'px';
+    input.className = style.input__size
+    input.style.height = 20 + 6 + 'px';
     input.style.width = 100 + 3 + 'px';
     input.onchange = (e) => setValueCopy(e.currentTarget?.value)
     input.value = valueCopy
@@ -208,10 +209,10 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
     input.type = 'number';
 
     input.style.position = 'absolute';
-    input.style.top = pos.y + 3 + 'px';
-    input.style.left = pos.x + 'px';
-
-    input.style.height = 20 + 3 + 'px';
+    input.style.top = pos.y -3+ 'px';
+    input.style.left = pos.x - 10 + 'px';
+    input.className = style.input__size
+    input.style.height = 20 + 6 + 'px';
     input.style.width = 100 + 3 + 'px';
     input.onchange = (e) => setValueCopy(e.currentTarget?.value)
     input.value = valueCopy

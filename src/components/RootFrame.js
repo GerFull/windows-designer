@@ -36,7 +36,7 @@ import {
   rightVisibleWall
 
 } from "../store/slice/rightRectangles";
-import { changeWidth, changeHeight, replaceWidthRight, replaceWidthLeft } from "../store/slice/globalVariable";
+import { changeWidth, changeHeight, replaceWidthRight, replaceWidthLeft, changeDepth } from "../store/slice/globalVariable";
 import UrlImage from "./Figures/UrlImage";
 
 
@@ -54,7 +54,6 @@ import UrlImage from "./Figures/UrlImage";
 // документация подписать за что отвечает каждый блок
 // попробывать использовать useCallback для dragOver
 
-// добавить тень левые и правые стенки
 
 
 const FRAME_SIZE = 5;
@@ -62,20 +61,20 @@ const FRAME_SIZE = 5;
 
 const colors = [{
   mainColor: '#efcf9f',
-  frameColor: '#f4cb8d'
+  name: 'Стандартный'
 },
 {
   mainColor: 'white',
-  frameColor: '#c2c0c0'
+  name: 'Белый'
 },
 {
   mainColor: '#3d6990',
-  frameColor: '#757dd1'
+  name: 'Синий'
 }
 ]
 
 function RootFrame() {
-  const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
+  const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
   const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection } = useSelector(store => store.mainRectangles)
   const { leftRectangels, leftBackRectangles } = useSelector(store => store.leftRectangels)
   const { RightRectangels, rightBackRectangles } = useSelector(store => store.rightRectangels)
@@ -90,6 +89,7 @@ function RootFrame() {
 
   const [widthClosetChange, setWidthClosetChange] = useState(widthCloset * 5)
   const [heightClosetChange, setHeightClosetChange] = useState(heightCloset * 5)
+  const [depthClosetChange, setDepthClosetChange] = useState(depthCloset * 5)
   const [widthLeftWallChange, setWidthLeftWallChange] = useState(widthLeftWall * 5)
   const [widthRightWallChange, setWidthRightWallChange] = useState(widthRightWall * 5)
 
@@ -113,9 +113,14 @@ function RootFrame() {
   const [showObject, setShowObject] = useState({ fill: '#99ff99', opacity: 0.7, width: 10, height: 10, x: 0, y: 0 })
 
 
+  const [showMenu, setShowMenu] = useState(true)
+  const [showSize, setShowSize] = useState(false)
+  const [showPartition, setShowPartition] = useState(false)
+  const [showElements, setShowElements] = useState(false)
+
 
   const drop = (e) => {
-
+  
     e.preventDefault();
 
     if (selectedRectId !== null) {
@@ -252,7 +257,7 @@ function RootFrame() {
   // console.log(derection)
 
   useEffect(() => {
-    // fetchData()
+    fetchData()
   }, [])
 
 
@@ -382,10 +387,6 @@ function RootFrame() {
   }
 
 
-  const handleClick = (e) => {
-    // console.log('click')
-  };
-
 
 
   function clickCheck(props) {
@@ -427,6 +428,7 @@ function RootFrame() {
     input.type = 'number';
 
     input.style.position = 'absolute';
+    input.className=style.input__size
     input.style.top = pos.y + 3 + 'px';
     input.style.left = pos.x + 'px';
 
@@ -568,6 +570,10 @@ function RootFrame() {
     }
   }
 
+  const changeSizeDepth = () => {
+    dispatch(changeDepth(depthClosetChange / 5))
+  }
+
 
 
   const changeWidthLeftWall = () => {
@@ -591,6 +597,7 @@ function RootFrame() {
   }
 
   const changeColor = (value) => {
+
 
     if (value.includes('Images')) {
       dispatch(changeTextureMain({ value }))
@@ -660,378 +667,485 @@ function RootFrame() {
 
 
   }
+  {/* <button onClick={() => navigate('/admin')}>admin</button> */ }
+
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      width: '100%', position: 'relative'
-    }} id='1'>
-      {/* <button onClick={() => navigate('/admin')}>admin</button> */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+    <div className={style.homePage} id='1'>
 
-        <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={(e) => setDerection('1')}>
-          <img src="./images/vertical.png" />
-        </div>
+      <div className={style.container}>
+        <Stage
+          width={widthCanvas}
+          height={700}
+          ref={stageRef}
+          id="container"
+          style={{ position: 'relative' }}
+        >
+          <Layer x={100} y={50} ref={LayerRef} >
+            <Group visible={LeftWall}
+            >
+              {
+                leftBackRectangles.map((item) => {
+                  if (item.type === 'line') {
+                    return <ElipseTexture
+                      key={item.id}
+                      x={item.x}
+                      y={item.y}
+                      fill={item.fill}
+                      radiusX={item.radiusX}
+                      radiusY={item.radiusY}
+                      stroke={1}
+                      opacity={item.opacity}
+                      strokeWidth={1}
+                      texture={item.texture}
+                    />
+                  } else {
+                    return <Rectangle
+                      key={item.id}
+                      width={item.width}
+                      height={item.height}
+                      fill={item.fill}
+                      listening={false}
+                      x={item.x}
+                      y={item.y}
+                      stroke="black"
+                      opacity={item?.opacity}
+                      strokeWidth={1}
+                      texture={item?.texture && item?.texture}
+                    />
 
-        <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={() => setDerection('2')}>
-          <img src="./images/horizont.png" />
-        </div>
+                  }
 
-        <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={() => setDerection('3')}>
-          <img width={55} src="./images/barbell.jpg" />
-        </div>
-        <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={() => setDerection('4')}>
-          <img width={55} height={30} src="./images/вешалка.jpg" />
-        </div>
-        {/* <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={() => setDerection('5')}>
-          <img width={55} height={30} src="./images/sideHanger.jpg" />
-        </div> */}
-        <div style={{
-          width: 'fit-content', border: '1px solid black'
-          , marginBottom: '20px'
-        }} draggable={true} onDragStart={() => setDerection('6')}>
-          <img width={55} height={30} src="./images/sideHanger.jpg" />
-        </div>
+                })
+              }
+            </Group>
+            <Group visible={RightWall}>
+              {
+                rightBackRectangles.map((item, index) => {
+                  if (item?.type === 'line') {
+                    return <ElipseTexture
+                      key={item.id}
+                      x={item.x}
+                      y={item.y}
+                      fill={item.fill}
+                      radiusX={item.radiusX}
+                      radiusY={item.radiusY}
+                      stroke={1}
+                      opacity={item.opacity}
+                      strokeWidth={1}
+                      texture={item.texture}
+                    />
+                  } else {
+                    return <Rectangle
+                      key={item.id}
+                      width={item.width}
+                      height={item.height}
+                      fill={item.fill}
+                      listening={false}
+                      x={item.x}
+                      y={item.y}
+                      stroke="black"
+                      opacity={item?.opacity}
+                      strokeWidth={1}
+                      texture={item?.texture && item?.texture}
+                    />
 
-        <div>
-          Выбор цвета
-          <select value={colorValue} onChange={(e) => changeColor(e.target.value)} >
-            <option value={0}>Стандартный</option>
-            <option value={1}>Белый</option>
-            <option value={2}>Синий</option>
+                  }
+
+                })
+              }
+            </Group>
+
             {
-              textures.map(item => <option value={item.img}>{item.title}</option>)
+              mainBackRectangles.map((item) => {
+                if (item?.type === 'line') {
+                  return <Poligon
+                    key={item.id}
+                    points={item.points}
+                    closed={true}
+                    tension={item.tension}
+                    fill={item.fill}
+                    stroke={'black'}
+                    texture={item?.texture}
+                    draggable={true}
+                  />
+                } else {
+                  return <Rectangle
+                    key={item.id}
+                    width={item.width}
+                    height={item.height}
+                    fill={item.fill}
+                    listening={false}
+                    x={item.x}
+                    y={item.y}
+                    stroke="black"
+                    opacity={item?.opacity}
+                    strokeWidth={1}
+                    texture={item?.texture && item?.texture}
+                  />
+                }
+              })
             }
-          </select>
-        </div>
-        <div className={style.inputs}>
 
-          <div>
-            <div>
-              Ширина
-              <input onBlur={changeSizeWidth} onChange={(e) => setWidthClosetChange(Number(e.target.value))} value={widthClosetChange} step={100} type="number" />
-            </div>
+            <Group
 
-            <div>
-              Высота
-              <input onBlur={changeSizeHeight} onChange={(e) => setHeightClosetChange(Number(e.target.value))} value={heightClosetChange} step={50} type="number" />
-            </div>
-          </div>
+            >
+              {
+                leftRectangels.map((item) =>
 
-          <div>
-            <div>
-              Ширина левой задней стенки
-              <input onBlur={changeWidthLeftWall} onChange={(e) => setWidthLeftWallChange(Number(e.target.value))} value={widthLeftWallChange} step={10} type="number" />
-            </div>
+                  <Rectangle
+                    key={item.id}
+                    width={item.width}
+                    height={item.height}
+                    fill={item.color || null}
+                    x={item.x}
+                    y={item.y}
+                    id={item.id}
+                    stroke="black"
+                    opacity={item?.opacity}
+                    derection={item?.derection}
+                    draggable={item.draggable || false}
+                    strokeWidth={item.type === 'frame' && 0.3}
+                    type={item.type}
+                    dragover={dragover}
+                    onDragStart={() => dispatch(DragStarHorizontalLeft({ itemSelect: item }))}
+                    texture={item?.texture && item?.texture}
+                    onDragEnd={(e) => onDragEndLeft(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
+                  />
+                )
+              }
 
-            <div>
-              Ширина правой задней стенки
-              <input onBlur={changeWidthRightWall} onChange={(e) => setWidthRightWallChange(Number(e.target.value))} value={widthRightWallChange} step={10} type="number" />
-            </div>
+            </Group>
 
-          </div>
-          <div>
-            <div>
-              Задняя левая стенка
-              <input checked={LeftWall} onChange={e => changeLeftVisible(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Задняя правая стенка
-              <input checked={RightWall} onChange={e => changeRightVisible(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Задняя стенка
-              <input checked={MainWall} onChange={e => changeMainWall(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Левая стенка
-              <input checked={LeftInside} onChange={e => changeLeftInside(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Правая стенка
-              <input checked={RightInside} onChange={e => changeRightInside(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Потолок
-              <input checked={UpVisable} onChange={e => changeUpVisable(e.target.checked)} type="checkbox" />
-            </div>
-            <div>
-              Дно
-              <input checked={DownVisable} onChange={e => changeDownVisable(e.target.checked)} type="checkbox" />
-            </div>
-          </div>
-        </div>
+            <Group
+            >
+              {
+                Rectangels.map((item) =>
+
+                  <Rectangle
+                    key={item.id}
+                    width={item.width}
+                    height={item.height}
+                    // fill={item.color || 'black'}
+                    fill={item.color}
+                    listening={false}
+                    x={item.x}
+                    y={item.y}
+                    id={item.id}
+                    stroke="black"
+                    // stroke='white'
+                    opacity={item?.opacity}
+                    clickCheck={clickCheck}
+                    derection={item?.derection}
+                    draggable={item.draggable || false}
+                    strokeWidth={item.type === 'frame' && 0.3}
+                    // strokeWidth={1}
+                    type={item.type}
+                    dragover={dragover}
+                    onDragStart={() => onDragStartFrame(item)}
+                    texture={item?.texture && item?.texture}
+                    onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.frameID, item.derection)}
+                  />
+                )
+              }
+
+              {
+                selectedRectId && <Rectangle
+                  x={showObject.x}
+                  y={showObject.y}
+                  width={showObject.width}
+                  height={showObject.height}
+                  fill={!intersection ? '#99ff99' : 'red'}
+                  opacity={showObject.opacity}
+
+                />
+              }
+              {
+                elements.map(item =>
+
+                  <UrlImage
+                    key={item.id}
+                    image={item}
+                    dragover={dragover}
+                    clickCheck={clickCheck}
+                    onDragStart={() => onDragStartElements(item.type, item)}
+                    onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.type)}
+                  />
+
+                )
+
+              }
 
 
-        <button onClick={() => navigate('/door')} >Следующий этап</button>
+
+
+            </Group>
+
+
+            <Group
+
+            >
+              {
+                RightRectangels.map((item) =>
+
+                  <Rectangle
+                    key={item.id}
+                    width={item.width}
+                    height={item.height}
+                    fill={item.color || null}
+                    x={item.x}
+                    dragover={dragover}
+                    y={item.y}
+                    id={item.id}
+                    stroke="black"
+                    opacity={item?.opacity}
+                    derection={item?.derection}
+                    draggable={item.draggable || false}
+                    strokeWidth={item.type === 'frame' && 0.3}
+                    type={item.type}
+                    onDragStart={() => dispatch(DragStarHorizontalRight({ itemSelect: item }))}
+                    texture={item?.texture && item?.texture}
+                    onDragEnd={(e) => onDragEndRight(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
+                  />
+                )
+              }
+            </Group>
+
+            <Metrics width={widthCloset}
+              height={heightCloset}
+
+              widthLeftWall={widthLeftWall}
+              widthRightWall={widthRightWall}
+
+              LeftWall={LeftWall}
+              RightWall={RightWall}
+            />
+          </Layer>
+        </Stage>
       </div>
 
 
-      <Stage
-        width={widthCanvas}
-        height={700}
-        ref={stageRef}
-        onClick={(e) => handleClick(e)}
-        id="container"
-        className={style.container}
-      >
+      <div className={style.menu} style={{ backgroundColor: !showMenu ? 'white' : '#d9d9d9' }}>
+        <div>
+          {
 
-        <Layer x={100} y={50} ref={LayerRef} >
-          <Group visible={LeftWall}
-          >
-            {
-              leftBackRectangles.map((item) => {
-                if (item.type === 'line') {
-                  return <ElipseTexture
-                    key={item.id}
-                    x={item.x}
-                    y={item.y}
-                    fill={item.fill}
-                    radiusX={item.radiusX}
-                    radiusY={item.radiusY}
-                    stroke={1}
-                    opacity={item.opacity}
-                    strokeWidth={1}
-                    texture={item.texture}
-                  />
-                } else {
-                  return <Rectangle
-                    key={item.id}
-                    width={item.width}
-                    height={item.height}
-                    fill={item.fill}
-                    listening={false}
-                    x={item.x}
-                    y={item.y}
-                    stroke="black"
-                    opacity={item?.opacity}
-                    strokeWidth={1}
-                    texture={item?.texture && item?.texture}
-                  />
-
-                }
-
-              })
-            }
-          </Group>
-          <Group visible={RightWall}>
-            {
-              rightBackRectangles.map((item, index) => {
-                if (item?.type === 'line') {
-                  return <ElipseTexture
-                    key={item.id}
-                    x={item.x}
-                    y={item.y}
-                    fill={item.fill}
-                    radiusX={item.radiusX}
-                    radiusY={item.radiusY}
-                    stroke={1}
-                    opacity={item.opacity}
-                    strokeWidth={1}
-                    texture={item.texture}
-                  />
-                } else {
-                  return <Rectangle
-                    key={item.id}
-                    width={item.width}
-                    height={item.height}
-                    fill={item.fill}
-                    listening={false}
-                    x={item.x}
-                    y={item.y}
-                    stroke="black"
-                    opacity={item?.opacity}
-                    strokeWidth={1}
-                    texture={item?.texture && item?.texture}
-                  />
-
-                }
-
-              })
-            }
-          </Group>
+          showMenu && <div className={style.menu__header}>
+            <p className={style.menu__title}>Шкаф</p>
+            <p className={style.menu__subtitle}>Стандратное описание</p>
+          </div>
+        }
 
           {
-            mainBackRectangles.map((item) => {
-              if (item?.type === 'line') {
-                return <Poligon
-                  key={item.id}
-                  points={item.points}
-                  closed={true}
-                  tension={item.tension}
-                  fill={item.fill}
-                  stroke={'black'}
-                  texture={item?.texture}
-                  draggable={true}
-                />
-              } else {
-                return <Rectangle
-                  key={item.id}
-                  width={item.width}
-                  height={item.height}
-                  fill={item.fill}
-                  listening={false}
-                  x={item.x}
-                  y={item.y}
-                  stroke="black"
-                  opacity={item?.opacity}
-                  strokeWidth={1}
-                  texture={item?.texture && item?.texture}
-                />
-              }
-            })
-          }
 
-          <Group
+            showMenu && <div className={style.menu__container}>
+              <div onClick={() => {
+                setShowMenu(false)
+                setShowSize(true)
+              }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Размеры</p></div>
+              <div onClick={() => {
+                setShowMenu(false)
+                setShowPartition(true)
+              }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Перегородки</p></div>
+              <div onClick={() => {
+                setShowMenu(false)
+                setShowElements(true)
+              }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Доп. элементы</p></div>
+            </div>
+          }</div>
 
-          >
-            {
-              leftRectangels.map((item) =>
 
-                <Rectangle
-                  key={item.id}
-                  width={item.width}
-                  height={item.height}
-                  fill={item.color || null}
-                  x={item.x}
-                  y={item.y}
-                  id={item.id}
-                  stroke="black"
-                  opacity={item?.opacity}
-                  derection={item?.derection}
-                  draggable={item.draggable || false}
-                  strokeWidth={item.type === 'frame' && 0.3}
-                  type={item.type}
-                  dragover={dragover}
-                  onDragStart={() => dispatch(DragStarHorizontalLeft({ itemSelect: item }))}
-                  texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndLeft(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
-                />
-              )
-            }
+        {showMenu && <div className={style.menu__btnContainer}>
+          <div className={style.menu__backBtn} onClick={() => navigate('/door')}><p>Далее</p></div>
+        </div>}
 
-          </Group>
+        {
+          showSize &&
+          <div className={style.menu__inputs}>
+            <div>
+              <div className={style.menu__inputSize}>
 
-          <Group
-          >
-            {
-              Rectangels.map((item) =>
+                <p className={style.menu__inputSize_title}>Размеры</p>
 
-                <Rectangle
-                  key={item.id}
-                  width={item.width}
-                  height={item.height}
-                  // fill={item.color || 'black'}
-                  fill={item.color}
-                  listening={false}
-                  x={item.x}
-                  y={item.y}
-                  id={item.id}
-                  stroke="black"
-                  // stroke='white'
-                  opacity={item?.opacity}
-                  clickCheck={clickCheck}
-                  derection={item?.derection}
-                  draggable={item.draggable || false}
-                  strokeWidth={item.type === 'frame' && 0.3}
-                  // strokeWidth={1}
-                  type={item.type}
-                  dragover={dragover}
-                  onDragStart={() => onDragStartFrame(item)}
-                  texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.frameID, item.derection)}
-                />
-              )
-            }
+                <div className={style.menu__inputSize_container}>
 
-            {
-              selectedRectId && <Rectangle
-                x={showObject.x}
-                y={showObject.y}
-                width={showObject.width}
-                height={showObject.height}
-                fill={!intersection ? '#99ff99' : 'red'}
-                opacity={showObject.opacity}
+                  <div className={style.menu__inputSize_item}>
+                    <p>Ширина</p>
+                    <input className={style.input__size} onBlur={changeSizeWidth} onChange={(e) => setWidthClosetChange(Number(e.target.value))} value={widthClosetChange} step={100} type="number" />
 
-              />
-            }
-            {
-              elements.map(item =>
+                  </div>
+                  <div className={style.menu__inputSize_item}>
+                    <p>Высота</p>
+                    <input className={style.input__size} onBlur={changeSizeHeight} onChange={(e) => setHeightClosetChange(Number(e.target.value))} value={heightClosetChange} step={50} type="number" />
 
-                <UrlImage
-                  key={item.id}
-                  image={item}
-                  dragover={dragover}
-                  clickCheck={clickCheck}
-                  onDragStart={() => onDragStartElements(item.type, item)}
-                  onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.type)}
-                />
+                  </div>
+                  <div className={style.menu__inputSize_item}>
+                    <p>Глубина</p>
+                    <input className={style.input__size} onBlur={changeSizeDepth} onChange={(e) => setDepthClosetChange(Number(e.target.value))} value={depthClosetChange} step={100} type="number" />
 
-              )
+                  </div>
+                </div>
+                <div className={style.menu__inputSize_container}>
 
-            }
+                  <div className={style.menu__inputSize_item}>
+                    <p>Ширина лев. стенки</p>
+                    <input className={style.input__size} onBlur={changeWidthLeftWall} onChange={(e) => setWidthLeftWallChange(Number(e.target.value))} value={widthLeftWallChange} step={10} type="number" />
+
+                  </div>
+                  <div className={style.menu__inputSize_item}>
+                    <p>Ширина пр. стенки</p>
+                    <input className={style.input__size} onBlur={changeWidthRightWall} onChange={(e) => setWidthRightWallChange(Number(e.target.value))} value={widthRightWallChange} step={10} type="number" />
+
+                  </div>
+                </div>
+              </div>
+              <div className={style.menu__checkboxContainer}>
+
+                <label class={style.checkbox}>
+                  <input checked={LeftWall} onChange={e => changeLeftVisible(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>Задняя левая стенка</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={RightWall} onChange={e => changeRightVisible(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>  Задняя правая стенка</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={MainWall} onChange={e => changeMainWall(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>  Задняя стенка</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={LeftInside} onChange={e => changeLeftInside(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>     Левая стенка</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={RightInside} onChange={e => changeRightInside(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>  Правая стенка</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={UpVisable} onChange={e => changeUpVisable(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}>   Потолок</div>
+                </label>
+                <label class={style.checkbox}>
+                  <input checked={DownVisable} onChange={e => changeDownVisable(e.target.checked)} type="checkbox" />
+                  <div class={style.checkbox__checkmark}></div>
+                  <div class={style.checkbox__body}> Дно</div>
+                </label>
 
 
 
 
-          </Group>
+
+              </div>
 
 
-          <Group
+              <p className={style.menu__colorsTitle}>Цвет</p>
 
-          >
-            {
-              RightRectangels.map((item) =>
+              <div className={style.menu__colorsContainer}>
+                {
+                  colors.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                }
+                {
+                  textures?.map(item => <div onClick={() => changeColor(item.img)} style={{ backgroundImage: `url(http://127.0.0.1:8000/${item.img})`, backgroundColor: item.mainColor, border: item.img == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                }
+              </div>
 
-                <Rectangle
-                  key={item.id}
-                  width={item.width}
-                  height={item.height}
-                  fill={item.color || null}
-                  x={item.x}
-                  dragover={dragover}
-                  y={item.y}
-                  id={item.id}
-                  stroke="black"
-                  opacity={item?.opacity}
-                  derection={item?.derection}
-                  draggable={item.draggable || false}
-                  strokeWidth={item.type === 'frame' && 0.3}
-                  type={item.type}
-                  onDragStart={() => dispatch(DragStarHorizontalRight({ itemSelect: item }))}
-                  texture={item?.texture && item?.texture}
-                  onDragEnd={(e) => onDragEndRight(e.evt.layerX - 100, e.evt.layerY - 50, item.id)}
-                />
-              )
-            }
-          </Group>
 
-          <Metrics width={widthCloset}
-            height={heightCloset}
 
-            widthLeftWall={widthLeftWall}
-            widthRightWall={widthRightWall}
+            </div>
 
-            LeftWall={LeftWall}
-            RightWall={RightWall}
-          />
-        </Layer>
-      </Stage>
+
+
+            <div className={style.menu__btnContainer}>
+              <div className={style.menu__backBtn} onClick={() => {
+                setShowMenu(true)
+                setShowSize(false)
+              }}><img src="./images/cross.png" /><p>Свернуть</p></div>
+            </div>
+
+          </div>
+        }
+
+        {
+          showPartition &&
+          <div className={style.menu__inputs}>
+
+            <div>
+              <div className={style.menu__inputSize}>
+
+                <p className={style.menu__inputSize_title}>Перегородки</p>
+                <div className={style.menu__partitionContainer}>
+                  <div className={style.menu__partitionItem} >
+                    <img draggable={true} onDragStart={() => setDerection('1')} src="./images/vertical.png" />
+                    <p>Вертикальная перегородка</p>
+                  </div>
+
+                  <div className={style.menu__partitionItem}>
+                    <img draggable={true} onDragStart={() => setDerection('2')} src="./images/horizont.png" />
+                    <p>Горизонталная перегородка</p>
+                  </div>
+                </div>
+
+
+              </div>
+
+            </div>
+
+            <div className={style.menu__btnContainer}>
+              <div className={style.menu__backBtn} onClick={() => {
+                setShowMenu(true)
+                setShowPartition(false)
+              }}><img src="./images/cross.png" /><p>Свернуть</p></div>
+            </div>
+          </div>
+        }
+        {
+          showElements &&
+          <div className={style.menu__inputs}>
+
+
+            <div>
+              <div className={style.menu__inputSize}>
+
+                <p className={style.menu__inputSize_title}>Дополнительные элементы</p>
+                <div className={style.menu__partitionContainer}>
+
+                  <div className={style.menu__partitionItem} >
+                    <img draggable={true} onDragStart={() => setDerection('3')} src="./images/штанга.png" />
+                    <p>Штанга</p>
+                  </div>
+
+                  <div className={style.menu__partitionItem}>
+                    <img draggable={true} onDragStart={() => setDerection('4')} src="./images/вешалка.jpg" />
+                    <p>Вешалка</p>
+                  </div>
+                  <div className={style.menu__partitionItem}>
+                    <img draggable={true} onDragStart={() => setDerection('6')} src="./images/horizont.png" />
+                    <p>Ящик</p>
+                  </div>
+                </div>
+
+
+              </div>
+
+            </div>
+
+
+
+            <div className={style.menu__btnContainer}>
+              <div className={style.menu__backBtn} onClick={() => {
+                setShowMenu(true)
+                setShowElements(false)
+              }}><img src="./images/cross.png" /><p>Свернуть</p></div>
+            </div>
+          </div>
+        }
+      </div>
+
     </div>
   );
 }
