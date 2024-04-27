@@ -5,7 +5,7 @@ const FRAME_SIZE = 5;
 const colorMain = '#efcf9f'
 
 
-const heightCloset = 600
+const heightCloset = 400
 
 function id() {
    return Math.round(Math.random() * 10000);
@@ -30,7 +30,8 @@ const initialState = {
    ],
    horizontalLeftFrames: [],
    colorMain: '#efcf9f',
-   TextureMain: null
+   TextureMain: null,
+   LeftWallVisible:false
 }
 
 
@@ -228,7 +229,6 @@ const leftRectangelsSlice = createSlice({
             return { ...item, width: item.width + changeValue }
          })
 
-         console.log(changeValue)
 
          state.leftBackRectangles = state.leftBackRectangles.map(item => {
             if (item.type === 'line') {
@@ -293,7 +293,10 @@ const leftRectangelsSlice = createSlice({
       },
       leftVisibleWall(state, action) {
 
-         const { widthLeftWall, heightCloset } = action.payload
+         const { widthLeftWall, heightCloset,value } = action.payload
+
+         // console.log(value)
+         state.LeftWallVisible=value
 
          state.leftRectangels = [{ id: 20, width: widthLeftWall, height: heightCloset - 60, x: 0, y: 30 }]
          state.horizontalLeftFrames = []

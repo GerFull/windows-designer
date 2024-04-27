@@ -8,8 +8,8 @@ const initialState = {
    maxWidth: 5000,
    minWidth: 2000,
    widthCloset: 600,
-   heightCloset: 600,
-   depthCloset:140,
+   heightCloset: 400,
+   depthCloset:120,
    widthLeftWall:100,
    widthRightWall:100,
    admin: false

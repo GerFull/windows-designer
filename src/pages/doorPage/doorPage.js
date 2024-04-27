@@ -36,9 +36,9 @@ const colors = [{
 function DoorPage() {
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
    const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements } = useSelector(store => store.mainRectangles)
-   const { leftRectangels, leftBackRectangles } = useSelector(store => store.leftRectangels)
-   const { RightRectangels, rightBackRectangles } = useSelector(store => store.rightRectangels)
-   const { doors, doorRectangles } = useSelector(store => store.doors)
+   const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
+   const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
+   const { doors, doorRectangles, NumberOfDoors } = useSelector(store => store.doors)
 
    const state = useSelector(store => store)
 
@@ -54,8 +54,6 @@ function DoorPage() {
    const [countDoors, setCountDoors] = useState(3)
    const [showObject, setShowObject] = useState({ fill: '#99ff99', opacity: 0.7, width: 10, height: 10, x: 0, y: 0 })
 
-   const [LeftWall, setLeftWall] = useState(false)
-   const [RightWall, setRightWall] = useState(false)
 
    const [textures, setTextures] = useState([])
 
@@ -76,13 +74,16 @@ function DoorPage() {
    }
 
    useEffect(() => {
-      fetchData()
+      // fetchData()
+      if (doors?.length == 0) {
+         dispatch(createDoors({ countDoors: countDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+      }
    }, [])
 
 
-   useEffect(() => {
-      dispatch(createDoors({ countDoors: countDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
-   }, [countDoors])
+   console.log(doors.length)
+   console.log()
+
 
 
    useEffect(() => {
@@ -127,6 +128,11 @@ function DoorPage() {
 
    }
 
+
+   const changeCountDoors = (value) => {
+      setCountDoors(value)
+      dispatch(createDoors({ countDoors: value, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+   }
 
 
    const dragover = (e) => {
@@ -255,7 +261,6 @@ function DoorPage() {
    }
 
 
-
    const changeColor = (value) => {
 
       if (value.includes('Images')) {
@@ -272,22 +277,22 @@ function DoorPage() {
    const onDragStartFrame = (item) => {
 
       if (item.derection === 1) {
-        setDerection('1')
-        dispatch(DragStarDoorsVertical({ itemSelect: item }))
+         setDerection('1')
+         dispatch(DragStarDoorsVertical({ itemSelect: item }))
       } else {
-        setDerection('2')
-        dispatch(DragStarDoorsHorizontal({ itemSelect: item }))
+         setDerection('2')
+         dispatch(DragStarDoorsHorizontal({ itemSelect: item }))
       }
-  
-  
-    }
+
+
+   }
 
    return (
       <div className={style.doorsPage} id='1'>
 
 
          <div className={style.doorsPage__container}>
-            <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png"/></div>
+            <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png" /></div>
             <Stage
                width={widthCanvas}
                height={700}
@@ -299,7 +304,7 @@ function DoorPage() {
                <Layer x={100} y={50} ref={LayerRef}
                   listening={false}
                >
-                  <Group visible={LeftWall}
+                  <Group visible={LeftWallVisible}
                   >
                      {
                         leftBackRectangles.map((item) => {
@@ -334,7 +339,7 @@ function DoorPage() {
                         })
                      }
                   </Group>
-                  <Group visible={RightWall}>
+                  <Group visible={RightWallVisible}>
                      {
                         rightBackRectangles.map((item) => {
                            if (item?.type === 'line') {
@@ -506,7 +511,7 @@ function DoorPage() {
                            stroke={item.stroke}
                            listening={false}
                            strokeWidth={5}
-                           width={(widthCloset / countDoors) - 5}
+                           width={(widthCloset / NumberOfDoors) - 5}
                            height={heightCloset - 5}
                         />
                      )
@@ -550,9 +555,8 @@ function DoorPage() {
                      height={heightCloset}
                      widthLeftWall={widthLeftWall}
                      widthRightWall={widthRightWall}
-                     LeftWall={LeftWall}
-                     RightWall={RightWall}
-                     countDoors={countDoors}
+                     LeftWall={LeftWallVisible}
+                     RightWall={RightWallVisible}
                   />
 
 
@@ -602,7 +606,7 @@ function DoorPage() {
 
                            <div className={style.menu__inputSize_item}>
                               <p>Количество дверей</p>
-                              <input className={style.input__size} step={1} min={2} max={10} value={countDoors} onChange={(e) => setCountDoors(Number(e.target.value))} type="number" />
+                              <input className={style.input__size} step={1} min={2} max={10} value={countDoors} onChange={(e) => changeCountDoors(Number(e.target.value))} type="number" />
 
                            </div>
 
@@ -693,11 +697,11 @@ function DoorPage() {
                </div>
             }
 
-            {/* {showMenu && 
-            <div className={style.menu__btnContainer}>
-               <div className={style.menu__backBtn} onClick={() => navigate('/cost')}><p>Далее</p></div>
-            </div>
-            } */}
+            {showMenu &&
+               <div className={style.menu__btnContainer}>
+                  <div className={style.menu__backBtn} onClick={() => navigate('/cost')}><p>Далее</p></div>
+               </div>
+            }
          </div>
 
       </div>

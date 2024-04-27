@@ -18,7 +18,7 @@ function id() {
 }
 
 const widthCloset = 600
-const heightCloset = 600
+const heightCloset = 400
 
 const initialState = {
    Rectangels: [{ id: 1, width: widthCloset - 10, height: heightCloset - 10, x: 105, y: 5 }],
@@ -118,7 +118,8 @@ const initialState = {
    colorMain: '#efcf9f',
    elements: [],
    TextureMain: null,
-   intersection: false
+   intersection: false,
+   countBox: 0
 }
 
 
@@ -268,7 +269,7 @@ const mainRectanglesSlice = createSlice({
             id: idElement,
             width: itemSelect.width,
             height: heightBurb,
-            src: './images/штанга.png',
+            src: './images/barbell.png',
             x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
          }
 
@@ -277,7 +278,7 @@ const mainRectanglesSlice = createSlice({
                id: idElement,
                width: itemSelect.width - 100,
                height: heightBurb,
-               src: './images/штанга.png',
+               src: './images/barbell.png',
                x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
             }
 
@@ -286,7 +287,7 @@ const mainRectanglesSlice = createSlice({
                id: idElement,
                width: itemSelect.width - 50,
                height: heightBurb,
-               src: './images/штанга.png',
+               src: './images/barbell.png',
                x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
             }
          } else if (itemSelect.x + itemSelect.width === widthCloset + widthLeftWall - 5) {
@@ -294,7 +295,7 @@ const mainRectanglesSlice = createSlice({
                id: idElement,
                width: itemSelect.width - 50,
                height: heightBurb,
-               src: './images/штанга.png',
+               src: './images/barbell.png',
                x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
             }
          }
@@ -325,14 +326,23 @@ const mainRectanglesSlice = createSlice({
 
       },
       createDrawer(state, action) {
-         const { xk, yk, idd } = action.payload
+         const { xk, yk, idd, heightDrawer } = action.payload
 
          const idElement = id()
 
-
-
          let intersected = false;
-         const heightBurb = 20
+
+         let heightBurb = 20
+
+         if (!heightDrawer) {
+            heightBurb = 20
+            state.countBox = state.countBox + 1
+         } else {
+            heightBurb = heightDrawer
+
+         }
+
+
 
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
@@ -341,6 +351,7 @@ const mainRectanglesSlice = createSlice({
             id: idElement,
             width: itemSelect.width,
             height: heightBurb,
+            copyHeight: heightBurb,
             src: './images/drawer.png',
             x: itemSelect?.x, y: yk, type: 'drawer', draggable: true, derection: 2
          }
@@ -692,9 +703,13 @@ const mainRectanglesSlice = createSlice({
          state.Rectangels = state.Rectangels.filter(item => item?.id !== id)
       },
       deleteElement(state, action) {
-         const { id } = action.payload
+         const { id, type } = action.payload
 
          state.elements = state.elements.filter(item => item?.id !== id)
+
+         if (type === 'drawer') {
+            state.countBox = state.countBox - 1
+         }
       },
       onBlurInputVertical(state, action) {
 
@@ -872,7 +887,7 @@ const mainRectanglesSlice = createSlice({
 
          state.elements = state.elements.map(item => {
             if (item.id === itemSelect.id) {
-               return { ...item, height: item.height + changeValue }
+               return { ...item, height: item.height + changeValue, copyHeight: item.copyHeight + changeValue }
             } else return item
          })
 
@@ -1511,7 +1526,7 @@ const mainRectanglesSlice = createSlice({
                      item.points[7] = item.points[7] + 5
                      return item
                   case 'main':
-       
+
                      item.height = item.height + 5
                      return item
                   default:
@@ -1588,7 +1603,7 @@ export const { createVertical, createHorizontal, createNewBurb,
    DragStartHanger, deleteElement,
    createDrawer, onBlurInputDrawer,
    changeWallInside, changeVisibableUp,
-   checkIntercetion,changeVisibableDown
+   checkIntercetion, changeVisibableDown
 } = mainRectanglesSlice.actions;
 
 

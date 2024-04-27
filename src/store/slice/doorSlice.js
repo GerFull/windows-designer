@@ -11,6 +11,7 @@ function id() {
 const initialState = {
    doors: [],
    doorRectangles: [],
+   NumberOfDoors: 3,
    colorFrame: '#efcf9f',
    colorMain: 'white',
    verticalDoorsFrame: [],
@@ -54,6 +55,7 @@ const DoorPageslice = createSlice({
 
          state.doors = doorsArr
          state.doorRectangles = doorsReactanglesArr
+         state.NumberOfDoors = countDoors
 
       },
       createDoorsVertical(state, action) {

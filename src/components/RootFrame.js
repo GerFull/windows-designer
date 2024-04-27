@@ -55,6 +55,13 @@ import UrlImage from "./Figures/UrlImage";
 // попробывать использовать useCallback для dragOver
 
 
+// внутрянка 500 глубина
+// внешка 600 глубина
+
+// подсветка ящика с новой высотой
+// пересечение с рамками у ящика
+
+
 
 const FRAME_SIZE = 5;
 
@@ -75,9 +82,9 @@ const colors = [{
 
 function RootFrame() {
   const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection } = useSelector(store => store.mainRectangles)
-  const { leftRectangels, leftBackRectangles } = useSelector(store => store.leftRectangels)
-  const { RightRectangels, rightBackRectangles } = useSelector(store => store.rightRectangels)
+  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection, countBox } = useSelector(store => store.mainRectangles)
+  const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
+  const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
 
   // const state = useSelector(store => store)
 
@@ -97,8 +104,8 @@ function RootFrame() {
 
   const [colorValue, setColorValue] = useState(0)
 
-  const [LeftWall, setLeftWall] = useState(false)
-  const [RightWall, setRightWall] = useState(false)
+  const [LeftWall, setLeftWall] = useState(LeftWallVisible)
+  const [RightWall, setRightWall] = useState(RightWallVisible)
   const [MainWall, setMainWall] = useState(true)
   const [LeftInside, setLeftInside] = useState(true)
   const [RightInside, setRightInside] = useState(true)
@@ -120,7 +127,7 @@ function RootFrame() {
 
 
   const drop = (e) => {
-  
+
     e.preventDefault();
 
     if (selectedRectId !== null) {
@@ -250,14 +257,10 @@ function RootFrame() {
   }
 
 
-  // console.log(elements)
 
-
-
-  // console.log(derection)
 
   useEffect(() => {
-    fetchData()
+    // fetchData()
   }, [])
 
 
@@ -294,10 +297,11 @@ function RootFrame() {
   }
 
 
-  const onDragEndElements = (x, y, id, type) => {
+  const onDragEndElements = (x, y, id, type, height) => {
 
     setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
+    console.log(type)
 
     if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < heightCloset)) {
 
@@ -309,7 +313,7 @@ function RootFrame() {
           dispatch(createHanger({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall }))
           break;
         case 'drawer':
-          dispatch(createDrawer({ xk: x, yk: y, idd: id }))
+          dispatch(createDrawer({ xk: x, yk: y, idd: id, heightDrawer: height }))
           break;
         case 'sidehanger':
           dispatch(createSideHanger({ xk: x, yk: y, idd: id, widthCloset: widthCloset }))
@@ -317,10 +321,9 @@ function RootFrame() {
       }
 
 
-
     } else {
 
-      dispatch(deleteElement({ id: id }))
+      dispatch(deleteElement({ id: id, type }))
     }
 
   }
@@ -428,7 +431,7 @@ function RootFrame() {
     input.type = 'number';
 
     input.style.position = 'absolute';
-    input.className=style.input__size
+    input.className = style.input__size
     input.style.top = pos.y + 3 + 'px';
     input.style.left = pos.x + 'px';
 
@@ -621,12 +624,12 @@ function RootFrame() {
 
   const changeLeftVisible = (value) => {
     setLeftWall(value)
-    dispatch(leftVisibleWall({ widthLeftWall: widthLeftWall, heightCloset: heightCloset }))
+    dispatch(leftVisibleWall({ widthLeftWall: widthLeftWall, heightCloset: heightCloset, value }))
   }
 
   const changeRightVisible = (value) => {
     setRightWall(value)
-    dispatch(rightVisibleWall({ widthRightWall: widthRightWall, widthLeftWall: widthLeftWall, heightCloset: heightCloset, widthCloset: widthCloset }))
+    dispatch(rightVisibleWall({ widthRightWall: widthRightWall, widthLeftWall: widthLeftWall, heightCloset: heightCloset, widthCloset: widthCloset, value }))
   }
 
   const changeMainWall = (value) => {
@@ -668,6 +671,45 @@ function RootFrame() {
 
   }
   {/* <button onClick={() => navigate('/admin')}>admin</button> */ }
+
+
+  const sumSquare = () => {
+
+    const summVerticatal = Rectangels.filter(item => item.derection == 1 && item.type == 'frame').reduce(
+      (accumulator, item) => accumulator + ((item.height * 5) * ((depthCloset * 5) - 100)),
+      0,
+    );
+    // const summVerticatalAr = Rectangels.filter(item => item.derection == 1 && item.type == 'frame')
+
+    // const summHorizontalAr = Rectangels.filter(item => item.derection == 2 && item.type == 'frame')
+
+    const summHorizontal = Rectangels.filter(item => item.derection == 2 && item.type == 'frame').reduce(
+      (accumulator, item) => accumulator + ((item.width * 5) * ((depthCloset * 5) - 100)),
+      0,
+    )
+
+
+    // const widthSquare=((widthCloset*2)*5)*((depthCloset*5)-100)
+    // const heightSquare=((heightCloset*2)*5)*((depthCloset*5)-100)
+
+    // console.log(widthSquare)
+    // console.log(heightSquare)
+    // console.log(summVerticatalAr)
+    // console.log(summVerticatal)
+    // console.log(summHorizontalAr)
+    // console.log(summHorizontal)
+
+
+    const SquareElements = (summVerticatal + summHorizontal) / 1000000
+
+    const cost = ((SquareElements / 0.8 * 1200) + 2500) + (countBox * 1200)
+
+    // console.log(SquareElements)
+
+    // console.log('cost', cost)
+
+  }
+
 
 
   return (
@@ -869,7 +911,7 @@ function RootFrame() {
                     dragover={dragover}
                     clickCheck={clickCheck}
                     onDragStart={() => onDragStartElements(item.type, item)}
-                    onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.type)}
+                    onDragEnd={(e) => onDragEndElements(e.evt.layerX - 100, e.evt.layerY - 50, item.id, item.type, item?.copyHeight)}
                   />
 
                 )
@@ -929,11 +971,11 @@ function RootFrame() {
         <div>
           {
 
-          showMenu && <div className={style.menu__header}>
-            <p className={style.menu__title}>Шкаф</p>
-            <p className={style.menu__subtitle}>Стандратное описание</p>
-          </div>
-        }
+            showMenu && <div className={style.menu__header}>
+              <p className={style.menu__title}>Шкаф</p>
+              <p className={style.menu__subtitle}>Стандратное описание</p>
+            </div>
+          }
 
           {
 
@@ -957,6 +999,10 @@ function RootFrame() {
         {showMenu && <div className={style.menu__btnContainer}>
           <div className={style.menu__backBtn} onClick={() => navigate('/door')}><p>Далее</p></div>
         </div>}
+
+        {/* {showMenu && <div className={style.menu__btnContainer}>
+          <div className={style.menu__backBtn} onClick={sumSquare}><p>Далее</p></div>
+        </div>} */}
 
         {
           showSize &&
@@ -1000,40 +1046,40 @@ function RootFrame() {
               </div>
               <div className={style.menu__checkboxContainer}>
 
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={LeftWall} onChange={e => changeLeftVisible(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>Задняя левая стенка</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>Задняя левая стенка</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={RightWall} onChange={e => changeRightVisible(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>  Задняя правая стенка</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>  Задняя правая стенка</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={MainWall} onChange={e => changeMainWall(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>  Задняя стенка</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>  Задняя стенка</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={LeftInside} onChange={e => changeLeftInside(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>     Левая стенка</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>     Левая стенка</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={RightInside} onChange={e => changeRightInside(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>  Правая стенка</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>  Правая стенка</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={UpVisable} onChange={e => changeUpVisable(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}>   Потолок</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}>   Потолок</div>
                 </label>
-                <label class={style.checkbox}>
+                <label className={style.checkbox}>
                   <input checked={DownVisable} onChange={e => changeDownVisable(e.target.checked)} type="checkbox" />
-                  <div class={style.checkbox__checkmark}></div>
-                  <div class={style.checkbox__body}> Дно</div>
+                  <div className={style.checkbox__checkmark}></div>
+                  <div className={style.checkbox__body}> Дно</div>
                 </label>
 
 
@@ -1080,12 +1126,19 @@ function RootFrame() {
                 <p className={style.menu__inputSize_title}>Перегородки</p>
                 <div className={style.menu__partitionContainer}>
                   <div className={style.menu__partitionItem} >
-                    <img draggable={true} onDragStart={() => setDerection('1')} src="./images/vertical.png" />
+                    <div className={style.menu__imgContainer}>
+                      <img draggable={true} onDragStart={() => setDerection('1')} src="./images/vertical.png" />
+                    </div>
+
                     <p>Вертикальная перегородка</p>
                   </div>
 
                   <div className={style.menu__partitionItem}>
-                    <img draggable={true} onDragStart={() => setDerection('2')} src="./images/horizont.png" />
+                    <div className={style.menu__imgContainer}>
+
+                      <img draggable={true} onDragStart={() => setDerection('2')} src="./images/horizont.png" />
+                    </div>
+
                     <p>Горизонталная перегородка</p>
                   </div>
                 </div>
@@ -1115,16 +1168,22 @@ function RootFrame() {
                 <div className={style.menu__partitionContainer}>
 
                   <div className={style.menu__partitionItem} >
-                    <img draggable={true} onDragStart={() => setDerection('3')} src="./images/штанга.png" />
+                    <div className={style.menu__imgContainer}>
+                      <img draggable={true} onDragStart={() => setDerection('3')} src="./images/штанга.png" />
+                    </div>
                     <p>Штанга</p>
                   </div>
 
                   <div className={style.menu__partitionItem}>
-                    <img draggable={true} onDragStart={() => setDerection('4')} src="./images/вешалка.jpg" />
+                    <div className={style.menu__imgContainer}>
+                      <img draggable={true} onDragStart={() => setDerection('4')} src="./images/hanger.png" />
+                    </div>
                     <p>Вешалка</p>
                   </div>
                   <div className={style.menu__partitionItem}>
-                    <img draggable={true} onDragStart={() => setDerection('6')} src="./images/horizont.png" />
+                    <div className={style.menu__imgContainer}>
+                      <img draggable={true} onDragStart={() => setDerection('6')} src="./images/box.png" />
+                    </div>
                     <p>Ящик</p>
                   </div>
                 </div>

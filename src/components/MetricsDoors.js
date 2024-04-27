@@ -281,7 +281,6 @@ function MetricsDoors(props) {
       widthLeftWall, widthRightWall,
       LeftWall,
       RightWall,
-      countDoors
    } = props
 
 

@@ -6,7 +6,7 @@ const FRAME_SIZE = 5;
 const colorMain = '#efcf9f'
 
 const widthCloset = 600
-const heightCloset = 600
+const heightCloset = 400
 
 function id() {
    return Math.round(Math.random() * 10000);
@@ -33,7 +33,8 @@ const initialState = {
    ],
    horizontalRightFrames: [],
    colorMain: '#efcf9f',
-   TextureMain: null
+   TextureMain: null,
+   RightWallVisible:false
 }
 
 
@@ -174,6 +175,7 @@ const rightRectangelsSlice = createSlice({
                   if (item.type !== 'frame') {
                      return { ...item, height: item.height + (minHeight / 5 - heightCloset) }
                   } else {
+                     return item
                   }
                })
 
@@ -377,8 +379,8 @@ const rightRectangelsSlice = createSlice({
       },
       rightVisibleWall(state, action) {
 
-         const { widthRightWall, widthLeftWall, heightCloset, widthCloset } = action.payload
-
+         const { widthRightWall, widthLeftWall, heightCloset, widthCloset ,value} = action.payload
+         state.RightWallVisible=value
          state.RightRectangels = [{ id: 40, width: widthRightWall, height: heightCloset - 60, x: widthLeftWall + widthCloset, y: 30 },]
          state.horizontalRightFrames = []
       },
