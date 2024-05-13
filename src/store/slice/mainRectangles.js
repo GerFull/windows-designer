@@ -25,6 +25,7 @@ const initialState = {
    verticalFrames: [],
    horizontalFrames: [],
    mainBackRectangles: [
+
       { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: colorMain, colorType: 'frame', texture: null, },
       { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: 'black', opacity: 0.2, colorType: 'shadow', texture: null, },
 
@@ -33,9 +34,10 @@ const initialState = {
          points: [
             105, 5,
             205, 30,
-            205, heightCloset - 30,
-            105, heightCloset - 5],
-         fill: colorMain,
+            205, heightCloset - 25,
+            105, heightCloset ],
+         // fill: colorMain,
+         fill: 'gray',
          texture: null,
          type: 'line',
          changeType: 'left',
@@ -49,6 +51,11 @@ const initialState = {
             110 + (widthCloset - 15), 5,
             105 + (widthCloset - 10 - 100), 30,
             205, 30],
+         // points: [
+         //    105, 5,
+         //    110 + (widthCloset - 15), 5,
+         //    105 + (widthCloset - 10 ), 30,
+         //    105, 30],
          fill: colorMain,
          type: 'line',
          changeType: 'up',
@@ -61,14 +68,10 @@ const initialState = {
          points: [
             105 + (widthCloset - 10 - 100), 30,
             105 + (widthCloset - 10), 5,
-            105 + (widthCloset - 10), heightCloset - 5,
-            105 + (widthCloset - 10 - 100), heightCloset - 30],
-         // points: [
-         //    105 + (widthCloset - 10 - 100), 25,
-         //    105 + (widthCloset - 10), 0,
-         //    105 + (widthCloset - 10), heightCloset - 5,
-         //    105 + (widthCloset - 10 - 100), heightCloset - 30],
-         fill: colorMain,
+            105 + (widthCloset - 10), heightCloset ,
+            105 + (widthCloset - 10 - 100), heightCloset - 25],
+         // fill: colorMain,
+         fill: 'gray',
          type: 'line',
          changeType: 'right',
          colorType: 'main',
@@ -77,12 +80,18 @@ const initialState = {
 
       {
          id: id(),
+         // points: [
+         //    105, heightCloset - 30,
+         //    105 + (widthCloset - 10 ), heightCloset - 30,
+         //    110 + (widthCloset - 15), heightCloset - 5,
+         //    105, heightCloset - 5],
          points: [
-            205, heightCloset - 30,
-            105 + (widthCloset - 10 - 100), heightCloset - 30,
-            110 + (widthCloset - 15), heightCloset - 5,
-            105, heightCloset - 5],
-         fill: colorMain,
+            205, heightCloset - 25,
+            105 + (widthCloset - 10 - 100), heightCloset - 25,
+            110 + (widthCloset - 15), heightCloset,
+            105, heightCloset],
+         // fill: colorMain,
+         fill: 'white',
          type: 'line',
          changeType: 'down',
          colorType: 'main',
@@ -90,12 +99,14 @@ const initialState = {
       },
       {
          id: id(),
+         // width: widthCloset - 10 ,
          width: widthCloset - 10 - 200,
-         height: heightCloset - 60,
-         // height: heightCloset - 55,
+         height: heightCloset - 55,
+
          x: 205,
+         // x: 105,
          y: 30,
-         // y: 25,
+
          fill: colorMain, colorType: 'frame', texture: null,
          type: 'backWall',
          changeType: 'main'
@@ -103,10 +114,10 @@ const initialState = {
       {
          id: id(),
          width: widthCloset - 10 - 200,
-         height: heightCloset - 60,
-         // height: heightCloset - 55,
+         // width: widthCloset - 10 ,
+         height: heightCloset - 55,
+         // x: 105,
          x: 205,
-         // y: 25,
          y: 30,
          fill: 'black',
          opacity: 0.2,
@@ -114,10 +125,18 @@ const initialState = {
          texture: null,
          changeType: 'main',
          type: 'backWallShadow',
-      }],
+      }
+
+   ],
    colorMain: '#efcf9f',
    elements: [],
    TextureMain: null,
+   selectedTextura: {
+      id: 'std',
+      mainColor: '#efcf9f',
+      name: 'Стандартный',
+      cost: 500
+   },
    intersection: false,
    countBox: 0
 }
@@ -361,6 +380,14 @@ const mainRectanglesSlice = createSlice({
                intersected = true
             }
          })
+
+         state.Rectangels.filter(item => item.type === 'frame').forEach(item => {
+            if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height, newElement.id, item.id)) {
+               intersected = true
+            }
+         })
+
+
          state.elements = state.elements.filter(item => item?.id !== idd)
 
          if (!intersected) {
@@ -373,6 +400,8 @@ const mainRectanglesSlice = createSlice({
 
             state.elements = newElems
          }
+
+
       },
       createHanger(state, action) {
          const { xk, yk, idd, widthLeftWall } = action.payload
@@ -1306,7 +1335,8 @@ const mainRectanglesSlice = createSlice({
       },
       changeColorMain(state, action) {
 
-         const { mainColor } = action.payload
+         const { mainColor, texture } = action.payload
+
 
          state.mainBackRectangles = state.mainBackRectangles.map(item => {
             if (item.colorType !== 'shadow') {
@@ -1324,10 +1354,13 @@ const mainRectanglesSlice = createSlice({
             } else return item
          })
          state.colorMain = mainColor
+         state.selectedTextura = texture
       },
       changeTextureMain(state, action) {
 
-         const { value } = action.payload
+         const { value, texture } = action.payload
+
+         state.selectedTextura = texture
 
          let mainTexture = null
 
@@ -1413,13 +1446,13 @@ const mainRectanglesSlice = createSlice({
          if (!value) {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.changeType === type) {
-                  return { ...item, fill: 'white' }
+                  return { ...item, fill: 'gray' }
                } else return item
             })
          } else {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.changeType === type) {
-                  return { ...item, fill: colorMain }
+                  return { ...item, fill: state.colorMain }
                } else return item
             })
          }
@@ -1469,7 +1502,7 @@ const mainRectanglesSlice = createSlice({
 
                switch (item.changeType) {
                   case 'up':
-                     item.fill = colorMain
+                     item.fill = state.colorMain
                      item.points[1] = item.points[1] + 5
                      item.points[3] = item.points[3] + 5
                      item.points[5] = item.points[5] + 5
@@ -1538,10 +1571,9 @@ const mainRectanglesSlice = createSlice({
          } else {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
 
-
                switch (item.changeType) {
                   case 'down':
-                     item.fill = colorMain
+                     item.fill = state.colorMain
                      item.points[1] = item.points[1] - 5
                      item.points[3] = item.points[3] - 5
                      item.points[5] = item.points[5] - 5

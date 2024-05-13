@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import style from './texturePage.module.scss'
+import { set } from 'mobx'
 
 function TexturePage() {
 
@@ -9,18 +10,17 @@ function TexturePage() {
    const navigate = useNavigate()
 
    const [file, setFile] = useState(null);
-   const [newTexture, setNewTexture] = useState()
+   const [costTexture, setCostTexture] = useState()
    const [nameTexture, setNameTexture] = useState()
    const [imgsrc, setImgSrc] = useState()
-   const [texture, setTexture] = useState()
    const [typePage, setTypePage] = useState(0)
+
 
 
    const UPLOAD_ENDPOINT =
       `http://127.0.0.1:8000/api/Textures/${id}`;
 
 
-   const img = 'http://127.0.0.1:8000/Images/метод.png'
 
    const handleSubmit = async e => {
       e.preventDefault();
@@ -39,7 +39,7 @@ function TexturePage() {
 
    const changeNameTexture = async () => {
 
-      return await axios.put(UPLOAD_ENDPOINT, { "title": nameTexture }, {
+      return await axios.put(UPLOAD_ENDPOINT, { "title": nameTexture, 'cost': costTexture }, {
          headers: {
             'Content-Type': 'application/json',
          }
@@ -47,13 +47,17 @@ function TexturePage() {
    }
 
 
+
+
    const fetchData = async () => {
       const responce = await axios.get(`http://127.0.0.1:8000/api/Textures/${id}`);
       // const json = await data.json();
-      setTexture(responce.data);
+
       setNameTexture(responce.data.title)
       setImgSrc(responce.data.img)
+      setCostTexture(responce.data.cost)
    }
+
 
    useEffect(() => {
       fetchData()
@@ -100,14 +104,18 @@ function TexturePage() {
 
    return (
       <div>
-         <button onClick={() => navigate(-1)}>back</button>
-         <button onClick={() => setTypePage(1)}>Изменить</button>
-         <button onClick={() => setTypePage(0)}>Просмтр</button>
-         <button onClick={deleteTexture}>Удалить</button>
+         <div className={style.btn__container}>
+            <button className={style.btn__item} onClick={() => navigate(-1)}>back</button>
+            <button className={style.btn__item} onClick={() => setTypePage(1)}>Изменить</button>
+            <button className={style.btn__item} onClick={() => setTypePage(0)}>Просмотр</button>
+            <button className={style.btn__item} onClick={deleteTexture}>Удалить</button>
+         </div>
+
          {
             typePage == 0 &&
             <div>
-               <p>{nameTexture}</p>
+               <p className={style.title}>{nameTexture}</p>
+               <p className={style.title}>{costTexture} rub</p>
                <img className={style.container_inputs_img} src={imgsrc} />
 
             </div>
@@ -118,14 +126,18 @@ function TexturePage() {
 
             typePage == 1 &&
 
-            <div>
+            <div className={style.changeContainer}>
                <input type="file" onChange={handleOnChange} />
                <div>
-                  <p>Название текстуры</p>
-                  <input value={nameTexture} onChange={e => setNameTexture(e.target.value)} type='text' />
+                  <p className={style.title}>Название текстуры</p>
+                  <input className={style.input__text} value={nameTexture} onChange={e => setNameTexture(e.target.value)} type='text' />
+               </div>
+               <div>
+                  <p className={style.title}>Цена</p>
+                  <input className={style.input__text} value={costTexture} onChange={e => setCostTexture(e.target.value)} type='number' />
                </div>
                <img className={style.container_inputs_img} src={imgsrc} />
-               <button onClick={handleSubmit} >Изменить</button>
+               <button className={style.btn__item} onClick={handleSubmit} >Изменить</button>
 
             </div>
          }

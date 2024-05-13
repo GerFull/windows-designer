@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Group } from "react-konva";
+import { Stage, Layer, Group, Rect } from "react-konva";
 import style from '../css/RootFrame.module.scss'
 import { useDispatch, useSelector } from 'react-redux';
 import Metrics from "./Metrics";
@@ -20,7 +20,7 @@ import {
   createHanger, createSideHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
   changeWallInside, changeVisibableUp,
-  checkIntercetion, changeVisibableDown
+  changeVisibableDown
 } from "../store/slice/mainRectangles";
 import {
   createHorizontalLeft, DragStarHorizontalLeft,
@@ -45,8 +45,6 @@ import UrlImage from "./Figures/UrlImage";
 
 // переделать SelectdeRectId сделать его глобальным
 
-
-
 // делать минус 100 так как layer сдвинули на 100 по x и y
 // 1 пиксель 5мм
 
@@ -58,31 +56,42 @@ import UrlImage from "./Figures/UrlImage";
 // внутрянка 500 глубина
 // внешка 600 глубина
 
-// подсветка ящика с новой высотой
-// пересечение с рамками у ящика
+
+// при смене цвета если стенкки нет то она меняет цвет
 
 
+// итог заказа pdf документ
+
+// смотрит скачаенный
 
 const FRAME_SIZE = 5;
 
 
-const colors = [{
-  mainColor: '#efcf9f',
-  name: 'Стандартный'
-},
-{
-  mainColor: 'white',
-  name: 'Белый'
-},
-{
-  mainColor: '#3d6990',
-  name: 'Синий'
-}
+const colors = [
+  {
+    id: 'std',
+    mainColor: '#efcf9f',
+    name: 'Стандартный',
+    cost: 500
+  },
+  {
+    id: 'wh',
+    mainColor: 'white',
+    name: 'Белый',
+    cost: 500
+  },
+  {
+    id: 'bl',
+    mainColor: '#3d6990',
+    name: 'Синий',
+    cost: 500
+  }
 ]
+
 
 function RootFrame() {
   const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection, countBox } = useSelector(store => store.mainRectangles)
+  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, intersection, countBox, selectedTextura } = useSelector(store => store.mainRectangles)
   const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
   const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
 
@@ -101,22 +110,25 @@ function RootFrame() {
   const [widthRightWallChange, setWidthRightWallChange] = useState(widthRightWall * 5)
 
   const [widthCanvas, setWidthCanvas] = useState(widthCloset + widthRightWall + 300)
+  const [heightCanvas, setHeightCanvas] = useState(heightCloset + 100)
 
-  const [colorValue, setColorValue] = useState(0)
+  // const [LeftWall, setLeftWall] = useState(LeftWallVisible)
+  // const [RightWall, setRightWall] = useState(RightWallVisible)
 
-  const [LeftWall, setLeftWall] = useState(LeftWallVisible)
-  const [RightWall, setRightWall] = useState(RightWallVisible)
+  const [LeftWall, setLeftWall] = useState(true)
+  const [RightWall, setRightWall] = useState(true)
   const [MainWall, setMainWall] = useState(true)
-  const [LeftInside, setLeftInside] = useState(true)
-  const [RightInside, setRightInside] = useState(true)
+  const [LeftInside, setLeftInside] = useState(false)
+  const [RightInside, setRightInside] = useState(false)
   const [UpVisable, setUpVisable] = useState(true)
-  const [DownVisable, setDownVisable] = useState(true)
+  const [DownVisable, setDownVisable] = useState(false)
 
   const [textures, setTextures] = useState([])
 
   const LayerRef = useRef(null)
   const [selectedRectId, setSelectedRectId] = useState(null)
   const [derection, setDerection] = useState(null)
+  const [heightDrawer, setheightDrawer] = useState(20)
   const [showObject, setShowObject] = useState({ fill: '#99ff99', opacity: 0.7, width: 10, height: 10, x: 0, y: 0 })
 
 
@@ -241,7 +253,7 @@ function RootFrame() {
           setShowObject({ ...showObject, width: 100, height: 130, x: x, y: item.y })
           break;
         case '6':
-          setShowObject({ ...showObject, width: item.width, height: 20, x: item.x, y: y })
+          setShowObject({ ...showObject, width: item.width, height: heightDrawer, x: item.x, y: y })
           break;
 
         default:
@@ -253,14 +265,14 @@ function RootFrame() {
   }
 
   const fetchData = async () => {
-    await axios.get('http://127.0.0.1:8000/api/Textures/').then(res => setTextures(res.data)).catch(err => console.log(err))
+    await axios.get('http://127.0.0.1:8000/api/Textures/').then(res => setTextures(res.data)).catch(err => err)
   }
 
 
 
 
   useEffect(() => {
-    // fetchData()
+    fetchData()
   }, [])
 
 
@@ -301,7 +313,6 @@ function RootFrame() {
 
     setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
 
-    console.log(type)
 
     if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < heightCloset)) {
 
@@ -343,6 +354,7 @@ function RootFrame() {
         break;
       case 'drawer':
         setDerection('6')
+        setheightDrawer(item.height)
         dispatch(DragStartHanger({ itemSelect: item }))
         break;
 
@@ -439,13 +451,27 @@ function RootFrame() {
     input.style.width = 100 + 3 + 'px';
     input.value = (value + 2) * 5
 
+
+    let focusInput = false
+
+
+    input.onfocus = (e) => {
+      focusInput = true
+      console.log('focus')
+    }
+
     if (item?.derection === 2) {
-      input.onblur = (e) => dispatch(onBlurInputHorizontal({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, width: item.width }))
+      input.onblur = (e) => {
+        focusInput = false
+        dispatch(onBlurInputHorizontal({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, width: item.width }))
+      }
     }
     if (item?.derection === 1) {
+      focusInput = false
       input.onblur = (e) => dispatch(onBlurInputVertical({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
     }
     if (item.type === 'drawer') {
+      focusInput = false
       input.value = value * 5
       input.onblur = (e) => dispatch(onBlurInputDrawer({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
     }
@@ -457,16 +483,18 @@ function RootFrame() {
     function removeInput(e) {
 
 
+
+      console.log(e.target)
+
       if (e.target === wrap) {
 
-        wrap.parentNode.removeChild(wrap);
-        wrap.removeEventListener("click", removeInput);
+        if (!focusInput) containerDiv?.removeChild(wrap)
 
       }
 
     }
 
-    wrap.addEventListener('click', removeInput, { once: true });
+    wrap.addEventListener('click', removeInput);
 
   }
 
@@ -523,7 +551,7 @@ function RootFrame() {
   }
 
 
-  // console.log(Rectangels)
+
 
   const changeSizeHeight = () => {
 
@@ -541,20 +569,23 @@ function RootFrame() {
 
       dispatch(changeHeight(maxHeight / 5))
       setHeightClosetChange(maxHeight)
+      setHeightCanvas(heightCanvas + (maxHeight / 5 - heightCloset))
 
     } else if (heightClosetChange < minHeight) {
+
       if (heightClosetChange / 5 < lastFrame + 50) {
 
 
         dispatch(changeHeight(lastFrame + 50))
         setHeightClosetChange((lastFrame + 50) * 5)
+        setHeightCanvas(heightCanvas + ((lastFrame + 50) - heightCloset))
 
       } else {
 
 
         dispatch(changeHeight(minHeight / 5))
         setHeightClosetChange(minHeight)
-
+        setHeightCanvas(heightCanvas + (minHeight / 5 - heightCloset))
       }
 
     } else {
@@ -563,11 +594,14 @@ function RootFrame() {
 
         dispatch(changeHeight(lastFrame + 50))
         setHeightClosetChange((lastFrame + 50) * 5)
+        setHeightCanvas(heightCanvas + ((lastFrame + 50) - heightCloset))
 
       } else {
 
 
         dispatch(changeHeight(heightClosetChange / 5))
+        setHeightClosetChange(heightClosetChange)
+        setHeightCanvas(heightCanvas + ((heightClosetChange / 5) - heightCloset))
 
       }
     }
@@ -599,25 +633,26 @@ function RootFrame() {
     dispatch(replaceWidthRight(widthRightWallChange / 5))
   }
 
-  const changeColor = (value) => {
+  const changeColor = (value, item) => {
+
 
 
     if (value.includes('Images')) {
-      dispatch(changeTextureMain({ value }))
+      dispatch(changeTextureMain({ value, texture: item }))
       dispatch(changeTextureLeft({ value }))
       dispatch(changeTextureRight({ value }))
     } else {
 
       const mainColor = colors[value].mainColor
 
-      dispatch(changeColorMain({ mainColor: mainColor }))
+      dispatch(changeColorMain({ mainColor: mainColor, texture: colors[value] }))
       dispatch(changeColorLeft({ mainColor: mainColor }))
       dispatch(changeColorRight({ mainColor: mainColor }))
 
 
     }
 
-    setColorValue(value)
+    // setColorValue(value)
   }
 
 
@@ -640,11 +675,13 @@ function RootFrame() {
 
   const changeLeftInside = (value) => {
     setLeftInside(value)
+    setLeftWall(!value)
     dispatch(changeWallInside({ value, type: 'left' }))
   }
 
   const changeRightInside = (value) => {
     setRightInside(value)
+    setRightWall(!value)
     dispatch(changeWallInside({ value, type: 'right' }))
   }
 
@@ -718,14 +755,14 @@ function RootFrame() {
       <div className={style.container}>
         <Stage
           width={widthCanvas}
-          height={700}
+          height={heightCanvas}
           ref={stageRef}
           id="container"
           style={{ position: 'relative' }}
         >
           <Layer x={100} y={50} ref={LayerRef} >
-            <Group visible={LeftWall}
-            >
+            {/* <Group visible={LeftWall}>
+              
               {
                 leftBackRectangles.map((item) => {
                   if (item.type === 'line') {
@@ -760,8 +797,11 @@ function RootFrame() {
 
                 })
               }
-            </Group>
-            <Group visible={RightWall}>
+            </Group> */}
+
+
+
+            {/* <Group visible={RightWall}>
               {
                 rightBackRectangles.map((item, index) => {
                   if (item?.type === 'line') {
@@ -796,42 +836,71 @@ function RootFrame() {
 
                 })
               }
+            </Group> */}
+
+            <Group>
+              {
+                mainBackRectangles.map((item) => {
+                  if (item?.type === 'line') {
+                    return <Poligon
+                      key={item.id}
+                      points={item.points}
+                      closed={true}
+                      tension={item.tension}
+                      fill={item.fill}
+                      stroke={'black'}
+                      texture={item?.texture}
+                      draggable={true}
+                    />
+                  } else {
+                    return <Rectangle
+                      key={item.id}
+                      width={item.width}
+                      height={item.height}
+                      fill={item.fill}
+                      listening={false}
+                      x={item.x}
+                      y={item.y}
+                      stroke="black"
+                      opacity={item?.opacity}
+                      strokeWidth={1}
+                      texture={item?.texture && item?.texture}
+                    />
+                  }
+                })
+              }
+
+
             </Group>
 
-            {
-              mainBackRectangles.map((item) => {
-                if (item?.type === 'line') {
-                  return <Poligon
-                    key={item.id}
-                    points={item.points}
-                    closed={true}
-                    tension={item.tension}
-                    fill={item.fill}
-                    stroke={'black'}
-                    texture={item?.texture}
-                    draggable={true}
-                  />
-                } else {
-                  return <Rectangle
-                    key={item.id}
-                    width={item.width}
-                    height={item.height}
-                    fill={item.fill}
-                    listening={false}
-                    x={item.x}
-                    y={item.y}
-                    stroke="black"
-                    opacity={item?.opacity}
-                    strokeWidth={1}
-                    texture={item?.texture && item?.texture}
-                  />
-                }
-              })
-            }
+            <Group visible={LeftWall}>
 
-            <Group
+              <Rect
+                x={0}
+                y={0}
+                height={heightCloset}
+                width={105}
+                fill="gray"
+                stroke='black'
+                strokeWidth={1}
 
-            >
+
+              />
+
+            </Group>
+            <Group visible={RightWall}>
+              <Rect
+                x={95+widthCloset}
+                y={0}
+                height={heightCloset}
+                width={100}
+                fill="gray"
+                stroke='black'
+                strokeWidth={1}
+              />
+            </Group>
+
+            {/* <Group>
               {
                 leftRectangels.map((item) =>
 
@@ -857,10 +926,9 @@ function RootFrame() {
                 )
               }
 
-            </Group>
+            </Group> */}
 
-            <Group
-            >
+            <Group>
               {
                 Rectangels.map((item) =>
 
@@ -924,9 +992,7 @@ function RootFrame() {
             </Group>
 
 
-            <Group
-
-            >
+            {/* <Group>
               {
                 RightRectangels.map((item) =>
 
@@ -951,7 +1017,7 @@ function RootFrame() {
                   />
                 )
               }
-            </Group>
+            </Group> */}
 
             <Metrics width={widthCloset}
               height={heightCloset}
@@ -1030,7 +1096,7 @@ function RootFrame() {
 
                   </div>
                 </div>
-                <div className={style.menu__inputSize_container}>
+                {/* <div className={style.menu__inputSize_container}>
 
                   <div className={style.menu__inputSize_item}>
                     <p>Ширина лев. стенки</p>
@@ -1042,11 +1108,11 @@ function RootFrame() {
                     <input className={style.input__size} onBlur={changeWidthRightWall} onChange={(e) => setWidthRightWallChange(Number(e.target.value))} value={widthRightWallChange} step={10} type="number" />
 
                   </div>
-                </div>
+                </div> */}
               </div>
               <div className={style.menu__checkboxContainer}>
 
-                <label className={style.checkbox}>
+                {/* <label className={style.checkbox}>
                   <input checked={LeftWall} onChange={e => changeLeftVisible(e.target.checked)} type="checkbox" />
                   <div className={style.checkbox__checkmark}></div>
                   <div className={style.checkbox__body}>Задняя левая стенка</div>
@@ -1055,7 +1121,7 @@ function RootFrame() {
                   <input checked={RightWall} onChange={e => changeRightVisible(e.target.checked)} type="checkbox" />
                   <div className={style.checkbox__checkmark}></div>
                   <div className={style.checkbox__body}>  Задняя правая стенка</div>
-                </label>
+                </label> */}
                 <label className={style.checkbox}>
                   <input checked={MainWall} onChange={e => changeMainWall(e.target.checked)} type="checkbox" />
                   <div className={style.checkbox__checkmark}></div>
@@ -1064,12 +1130,12 @@ function RootFrame() {
                 <label className={style.checkbox}>
                   <input checked={LeftInside} onChange={e => changeLeftInside(e.target.checked)} type="checkbox" />
                   <div className={style.checkbox__checkmark}></div>
-                  <div className={style.checkbox__body}>     Левая стенка</div>
+                  <div className={style.checkbox__body}> Левая боковая стенка</div>
                 </label>
                 <label className={style.checkbox}>
                   <input checked={RightInside} onChange={e => changeRightInside(e.target.checked)} type="checkbox" />
                   <div className={style.checkbox__checkmark}></div>
-                  <div className={style.checkbox__body}>  Правая стенка</div>
+                  <div className={style.checkbox__body}>  Правая боковая стенка</div>
                 </label>
                 <label className={style.checkbox}>
                   <input checked={UpVisable} onChange={e => changeUpVisable(e.target.checked)} type="checkbox" />
@@ -1093,10 +1159,10 @@ function RootFrame() {
 
               <div className={style.menu__colorsContainer}>
                 {
-                  colors.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                  colors.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: item.id == selectedTextura.id ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
                 }
                 {
-                  textures?.map(item => <div onClick={() => changeColor(item.img)} style={{ backgroundImage: `url(http://127.0.0.1:8000/${item.img})`, backgroundColor: item.mainColor, border: item.img == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                  textures?.map(item => <div onClick={() => changeColor(item.img, item)} style={{ backgroundImage: `url(http://127.0.0.1:8000/${item.img})`, backgroundColor: item.mainColor, border: item.id == selectedTextura.id ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
                 }
               </div>
 
@@ -1182,7 +1248,10 @@ function RootFrame() {
                   </div>
                   <div className={style.menu__partitionItem}>
                     <div className={style.menu__imgContainer}>
-                      <img draggable={true} onDragStart={() => setDerection('6')} src="./images/box.png" />
+                      <img draggable={true} onDragStart={() => {
+                        setheightDrawer(20)
+                        setDerection('6')
+                      }} src="./images/box.png" />
                     </div>
                     <p>Ящик</p>
                   </div>

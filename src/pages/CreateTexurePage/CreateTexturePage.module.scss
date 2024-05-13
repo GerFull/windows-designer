@@ -1,3 +1,5 @@
+@import "mixins";
+
 .container_inputs{
    display: flex;
    flex-direction: column;
@@ -7,4 +9,61 @@
 
 .container_inputs_img{
    max-height: 150px;
+}
+
+
+.btn {
+   &__container {
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 10px;
+   }
+
+   &__item {
+      display: flex;
+      cursor: pointer;
+      align-items: center;
+      gap: 15px;
+      padding: 20px 30px;
+      border-radius: 5px;
+      width: fit-content;
+      color: white;
+      background-color: #66be00;
+
+      p {
+         @include ubuntuMedium();
+         font-size: 28px;
+         line-height: 33px;
+      }
+   }
+}
+
+.title {
+   @include ubuntuBold();
+   font-size: 32px;
+}
+
+
+.input__text {
+   background-color: white;
+   outline: 1px solid black;
+   padding: 0;
+   height: 40px;
+   line-height: 40px;
+   text-indent: 15px;
+
+   font-size: 20px;
+   border-radius: 5px;
+
+   &:focus {
+      outline: 2px solid black;
+   }
+}
+
+.changeContainer{
+   display: flex;
+   flex-direction: column;
+   gap:10px;   
+
 }

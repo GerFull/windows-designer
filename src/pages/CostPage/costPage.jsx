@@ -14,7 +14,7 @@ import UrlImage from "../../components/Figures/UrlImage";
 function CostPage() {
 
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall, depthCloset } = useSelector(store => store.globalVariable)
-   const { Rectangels, mainBackRectangles, elements, countBox } = useSelector(store => store.mainRectangles)
+   const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura } = useSelector(store => store.mainRectangles)
    const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
    const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles, NumberOfDoors } = useSelector(store => store.doors)
@@ -58,18 +58,13 @@ function CostPage() {
 
       // P=S/0.8*1200+2500
 
-      // const widthSquare=((widthCloset*2)*5)*((depthCloset*5)-100)
-      // const heightSquare=((heightCloset*2)*5)*((depthCloset*5)-100)
 
-      // console.log(summVerticatalAr)
-      // console.log(summVerticatal)
-      // console.log(summHorizontalAr)
-      // console.log(summHorizontal)
 
       const SquareElements = (summVerticatal + summHorizontal) / 1000000
 
-      const cost = ((SquareElements / 0.8 * 1200) + 2500) + (countBox * 1200)
+      // 1200 разбить на переменные
 
+      const cost = ((SquareElements / 0.8 * (700 + selectedTextura.cost)) + 2500) + (countBox * 1200)
 
       return cost
    }

@@ -708,7 +708,7 @@ function Metrics(props) {
         width={width}
         change={false}
       />
-      <Group visible={LeftWall}>
+      {/* <Group visible={LeftWall}>
         <HorizontalMetric
 
           x={-100}
@@ -724,7 +724,7 @@ function Metrics(props) {
           width={widthRightWall}
           change={false}
         />
-      </Group>
+      </Group> */}
       <Group x={-(25 + 100)}>{verticalLeftComponents}</Group>
       <Group x={width + (RightWall ? widthRightWall : 0) + (widthLeftWall - 100) + 50}>{verticalComponents}</Group>
       <Group x={width + widthRightWall + (widthLeftWall - 100)}>{verticalRightComponents}</Group>

@@ -76,13 +76,16 @@ function DoorPage() {
    useEffect(() => {
       // fetchData()
       if (doors?.length == 0) {
-         dispatch(createDoors({ countDoors: countDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+         dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
+
+      if(doorRectangles[0]?.height !==heightCloset-10){
+         dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+      }
+
+      setCountDoors(NumberOfDoors)
    }, [])
 
-
-   console.log(doors.length)
-   console.log()
 
 
 
