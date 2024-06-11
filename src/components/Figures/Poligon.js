@@ -6,7 +6,7 @@ function Poligon(props) {
 
    const { points, tension, fill, texture } = props
 
-   const [textureImage] = useImage(texture)
+   const [textureImage] = useImage(texture,'Anonymous')
 
    return (
       <Line
@@ -16,7 +16,7 @@ function Poligon(props) {
          fill={texture ? null : fill}
          stroke={'black'}
          strokeWidth={1}
-         fillPatternImage={texture && textureImage}
+         fillPatternImage={textureImage && textureImage}
          draggable={true}
       />
 

@@ -31,7 +31,7 @@ const initialState = {
    horizontalLeftFrames: [],
    colorMain: '#efcf9f',
    TextureMain: null,
-   LeftWallVisible:false
+   LeftWallVisible:true
 }
 
 

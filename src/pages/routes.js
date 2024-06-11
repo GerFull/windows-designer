@@ -11,6 +11,7 @@ import CostPage from "./CostPage/costPage";
 export default () => (
    <Routes>
       <Route path="/" element={<HomePage />} />
+      {/* <Route path="/" element={<CostPage />} /> */}
       <Route path="/door" element={<DoorPage />} />
       <Route path="/cost" element={<CostPage />} />
       <Route path="/admin" element={<AdminPage />} />

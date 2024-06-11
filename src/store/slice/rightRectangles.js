@@ -34,7 +34,7 @@ const initialState = {
    horizontalRightFrames: [],
    colorMain: '#efcf9f',
    TextureMain: null,
-   RightWallVisible:false
+   RightWallVisible:true
 }
 
 

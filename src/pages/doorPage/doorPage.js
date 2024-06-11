@@ -10,26 +10,41 @@ import { useNavigate } from "react-router-dom";
 import {
    createDoorsHorizontal, createDoorsVertical,
    createDoors, DragStarDoorsVertical,
-   DragStarDoorsHorizontal, deleteDoorsRectangle, onBlurInputDoorsVertical, onBlurInputDoorsHorizontal, changeColorStroke, changeColorRect
+   DragStarDoorsHorizontal, deleteDoorsRectangle,
+   onBlurInputDoorsVertical,
+   onBlurInputDoorsHorizontal,
+   changeColorStroke,
+   changeColorRect,
+   changeThicknessFrame
 } from "../../store/slice/doorSlice";
 import MetricsDoors from "../../components/MetricsDoors";
 import UrlImage from "../../components/Figures/UrlImage";
 
+
 const FRAME_SIZE = 5;
 
 
-const colors = [{
-   mainColor: '#efcf9f',
-},
-{
-   mainColor: 'white',
-},
-{
-   mainColor: '#3d6990',
+const colors = [
+   {
+      mainColor: 'white',
+   },
+   {
+      mainColor: './images/miror.jpg',
+   },
+
+]
+const colorsFrame = [{
+   mainColor: '#8d8d8d',
+   name:'Серый'
 },
 {
    mainColor: 'black',
-}
+   name:'Черный'
+},
+{
+   mainColor: 'white',
+   name:'Белый'
+},
 ]
 
 
@@ -38,11 +53,12 @@ function DoorPage() {
    const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements } = useSelector(store => store.mainRectangles)
    const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
    const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
-   const { doors, doorRectangles, NumberOfDoors } = useSelector(store => store.doors)
+   const { doors, doorRectangles, NumberOfDoors, styleFrame } = useSelector(store => store.doors)
 
    const state = useSelector(store => store)
 
    const dispatch = useDispatch()
+
 
    const stageRef = useRef(null)
 
@@ -59,13 +75,14 @@ function DoorPage() {
 
    const LayerRef = useRef(null)
    const [selectedRectId, setSelectedRectId] = useState(null)
+   const [selectedDoor, setSelectedDoor] = useState(null)
    const [derection, setDerection] = useState(null)
 
 
    const [showMenu, setShowMenu] = useState(true)
    const [showDoors, setShowDoors] = useState(false)
    const [showPartition, setShowPartition] = useState(false)
-
+   const [systemDoors, setSystemDoors] = useState(false)
 
 
 
@@ -74,12 +91,15 @@ function DoorPage() {
    }
 
    useEffect(() => {
-      // fetchData()
+      fetchData()
       if (doors?.length == 0) {
          dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
 
-      if(doorRectangles[0]?.height !==heightCloset-10){
+      if (doorRectangles[0]?.height !== heightCloset - 10) {
+         dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+      }
+      if (doorRectangles[0]?.width !== widthCloset - 10) {
          dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
 
@@ -87,6 +107,7 @@ function DoorPage() {
    }, [])
 
 
+   // console.log(doors)
 
 
    useEffect(() => {
@@ -122,9 +143,10 @@ function DoorPage() {
                }
             }
             setDerection(null)
-         } else if (color !== null) {
-            dispatch(changeColorRect({ color: color, id: selectedRectId.id }))
          }
+         // else if (color !== null) {
+         //    dispatch(changeColorRect({ color: color, id: selectedRectId.id }))
+         // }
       }
 
       setSelectedRectId(null)
@@ -269,8 +291,8 @@ function DoorPage() {
       if (value.includes('Images')) {
 
       } else {
-         const mainColor = colors[value].mainColor
-         dispatch(changeColorStroke({ mainColor: mainColor }))
+         const mainColor = colorsFrame[value].mainColor
+         dispatch(changeColorStroke({ mainColor: mainColor ,name:colorsFrame[value].name}))
       }
 
       setColorValue(value)
@@ -287,6 +309,39 @@ function DoorPage() {
          dispatch(DragStarDoorsHorizontal({ itemSelect: item }))
       }
 
+
+   }
+
+   const changeSystem = (value) => {
+      setSystemDoors(value)
+
+   }
+
+   const changeStyleFrame = (value) => {
+      dispatch(changeThicknessFrame({ value }))
+      dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+   }
+
+   const selectDoor = (props) => {
+      setSelectedDoor(props?.attrs.id)
+   }
+
+
+   const changeTextureDoor = (color) => {
+
+
+      if (selectedDoor !== null) {
+         dispatch(changeColorRect({ color: color, id: selectedDoor }))
+      }
+
+   }
+
+
+   const changeStyleCursor = (type) => {
+
+      if (type === 'enter') {
+         stageRef.current.container().style.cursor = 'pointer';
+      } else stageRef.current.container().style.cursor = 'default';
 
    }
 
@@ -307,7 +362,7 @@ function DoorPage() {
                <Layer x={100} y={50} ref={LayerRef}
                   listening={false}
                >
-                  <Group visible={LeftWallVisible}
+                  {/* <Group visible={LeftWallVisible}
                   >
                      {
                         leftBackRectangles.map((item) => {
@@ -375,49 +430,76 @@ function DoorPage() {
 
                         })
                      }
+                  </Group> */}
+                  <Group>
+                     {
+                        mainBackRectangles.map((item) => {
+                           if (item?.type === 'line') {
+                              return <Poligon
+                                 points={item.points}
+                                 closed={true}
+                                 tension={item.tension}
+                                 fill={item.fill}
+                                 stroke={'black'}
+                                 texture={item?.texture}
+                                 draggable={true}
+                              />
+                           } else {
+                              return <Rectangle
+                                 width={item.width}
+                                 height={item.height}
+                                 fill={item.fill}
+                                 listening={false}
+                                 x={item.x}
+                                 y={item.y}
+                                 stroke="black"
+                                 opacity={item?.opacity}
+                                 strokeWidth={1}
+                                 texture={item?.texture && item?.texture}
+                              />
+                           }
+                        })
+                     }
+                     {
+                        elements.map(item =>
+
+                           <UrlImage
+                              key={item.id}
+                              image={item}
+
+                           />
+
+                        )
+
+                     }
+
+
                   </Group>
 
-                  {
-                     mainBackRectangles.map((item) => {
-                        if (item?.type === 'line') {
-                           return <Poligon
-                              points={item.points}
-                              closed={true}
-                              tension={item.tension}
-                              fill={item.fill}
-                              stroke={'black'}
-                              texture={item?.texture}
-                              draggable={true}
-                           />
-                        } else {
-                           return <Rectangle
-                              width={item.width}
-                              height={item.height}
-                              fill={item.fill}
-                              listening={false}
-                              x={item.x}
-                              y={item.y}
-                              stroke="black"
-                              opacity={item?.opacity}
-                              strokeWidth={1}
-                              texture={item?.texture && item?.texture}
-                           />
-                        }
-                     })
-                  }
-                  {
-                     elements.map(item =>
+                  <Group visible={LeftWallVisible}>
 
-                        <UrlImage
-                           key={item.id}
-                           image={item}
+                     <Rect
+                        x={0}
+                        y={0}
+                        height={heightCloset}
+                        width={105}
+                        fill="gray"
+                        stroke='black'
+                        strokeWidth={1}
+                     />
 
-                        />
-
-                     )
-
-                  }
-
+                  </Group>
+                  <Group visible={RightWallVisible}>
+                     <Rect
+                        x={95 + widthCloset}
+                        y={0}
+                        height={heightCloset}
+                        width={100}
+                        fill="gray"
+                        stroke='black'
+                        strokeWidth={1}
+                     />
+                  </Group>
                   <Group
 
                   >
@@ -510,12 +592,16 @@ function DoorPage() {
 
                         <Rect
                            x={item.x}
-                           y={2.5}
+                           // y={2.5}
+                           y={styleFrame ? 2.5 : 1.25}
                            stroke={item.stroke}
                            listening={false}
-                           strokeWidth={5}
-                           width={(widthCloset / NumberOfDoors) - 5}
-                           height={heightCloset - 5}
+                           // strokeWidth={5}
+                           strokeWidth={styleFrame ? 5 : 2.5}
+                           width={(widthCloset / NumberOfDoors) - (styleFrame ? 5 : 2.5)}
+                           // width={(widthCloset / NumberOfDoors) - 5}
+                           // height={heightCloset - 5}
+                           height={heightCloset - (styleFrame ? 5 : 2.5)}
                         />
                      )
                   }
@@ -529,7 +615,8 @@ function DoorPage() {
                            y={rect.y}
                            fill={rect.color}
                            opacity={rect.opacity}
-                           clickCheck={clickCheck}
+                           selectDoor={selectDoor}
+                           changeStyleCursor={changeStyleCursor}
                            width={rect.width}
                            strokeWidth={1}
                            draggable={rect.draggable}
@@ -591,7 +678,7 @@ function DoorPage() {
                      <div onClick={() => {
                         setShowMenu(false)
                         setShowPartition(true)
-                     }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Перегородки</p></div>
+                     }} className={style.menu__item}><img src="./images/arrow_down.png" /><p>Матераил дверей</p></div>
 
                   </div>
                }</div>
@@ -614,14 +701,27 @@ function DoorPage() {
                            </div>
 
                         </div>
+                        <div>
+
+                           <label className={style.checkbox}>
+                              <input checked={!styleFrame} onChange={e => changeStyleFrame(!e.target.checked)} type="checkbox" />
+                              <div className={style.checkbox__checkmark}></div>
+                              <div className={style.checkbox__body}> Система дверей Slim</div>
+                           </label>
+                           <label className={style.checkbox}>
+                              <input checked={styleFrame} onChange={e => changeStyleFrame(e.target.checked)} type="checkbox" />
+                              <div className={style.checkbox__checkmark}></div>
+                              <div className={style.checkbox__body}> Система дверей Style</div>
+                           </label>
+                        </div>
 
                      </div>
 
-                     <p className={style.menu__colorsTitle}>Цвет рамки</p>
+                     <p className={style.menu__colorsTitle}>Профиль</p>
 
                      <div className={style.menu__colorsContainer}>
                         {
-                           colors.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
+                           colorsFrame.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
                         }
 
                      </div>
@@ -647,7 +747,7 @@ function DoorPage() {
                <div className={style.menu__inputs}>
 
                   <div>
-                     <div className={style.menu__inputSize}>
+                     {/* <div className={style.menu__inputSize}>
 
                         <p className={style.menu__inputSize_title}>Перегородки</p>
                         <div className={style.menu__partitionContainer}>
@@ -663,23 +763,24 @@ function DoorPage() {
                         </div>
 
 
-                     </div>
+                     </div> */}
                      <div >
-                        <p className={style.menu__colorsTitle}>Цвета дверей</p>
+                        <p className={style.menu__colorsTitle}>Матераил дверей</p>
                         <div className={style.menu__colors}>
-                           {colors.map(item =>
 
-                              <div draggable={true} onDragStart={() => setColor(item.mainColor)}>
-                                 <div className={style.menu__colors_item} style={{ backgroundColor: item.mainColor }} />
-                              </div>
-                           )
-
-                           }
+                           {/* <div draggable={true} onDragStart={() => setColor('white')}>
+                              <div className={style.menu__colors_img} style={{ backgroundColor: 'white' }} />
+                           </div> */}
+                           <div className={style.menu__colors_item} onClick={() => changeTextureDoor('./images/miror.jpg')}>
+                              <img className={style.menu__colors_img} src={`./images/miror.jpg`} />
+                              <p className={style.menu__colors_title}>Зеркало</p>
+                           </div>
 
                            {
                               textures.map(item =>
-                                 <div draggable={true} onDragStart={() => setColor(item.img)}>
-                                    <img className={style.menu__colors_item} src={`http://127.0.0.1:8000/${item.img}`} />
+                                 <div className={style.menu__colors_item} onClick={() => changeTextureDoor(item.img)}>
+                                    <img className={style.menu__colors_img} src={`http://127.0.0.1:8000/${item.img}`} />
+                                    <p className={style.menu__colors_title} >{item.title}</p>
                                  </div>
                               )
                            }

@@ -7,13 +7,11 @@ import { changeHorizontalRightFrames } from "../store/slice/rightRectangles";
 import style from '../css/RootFrame.module.scss'
 
 const METRIC_SIZE = 25;
-const FRAME_SIZE = 3;
+const FRAME_SIZE = 5;
+const FRAME_SIZESHOW = 3.2
 
 
 
-// разбить на функции создание стрелок
-
-// добавить ограничения в рамках вертикальных и горизонтальных
 
 function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, left = false, right = false,
   lineSize,
@@ -28,7 +26,7 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
   const dispatch = useDispatch()
 
   useEffect(() => {
-    setValue(height)
+    setValue(heightShow)
     if (heightShow !== undefined) {
       setValueCopy(heightShow * 5)
     } else {
@@ -36,6 +34,8 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
     }
 
   }, [height])
+
+
 
   function check() {
     createInput(this.getAbsolutePosition())
@@ -112,19 +112,18 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
 
     } else if (right === true) {
 
-      console.log('right')
       dispatch(changeHorizontalRightFrames({ itemSelect, value, valueInput, heightShow }))
 
 
 
-      if (heightShow !== undefined) {
+      // if (heightShow !== undefined) {
 
-        setValue((valueInput - 150) / 5)
-      } else {
+      //   setValue((valueInput - 150) / 5)
+      // } else {
 
 
-        setValue((valueInput) / 5)
-      }
+      setValue((valueInput) / 5)
+      // }
 
 
 
@@ -149,9 +148,6 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
         fill="black"
         pointerAtBeginning
       />
-
-
-
       {type === undefined ? <>
         <Line points={[0, 0, lineSize || METRIC_SIZE, 0]} stroke="black" />
         <Line points={[0, height, lineSize || METRIC_SIZE, height]} stroke="black" />
@@ -175,15 +171,15 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
 }
 
 
-function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWall }) {
+function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWall, widthShow }) {
 
   const [value, setValue] = useState(0)
   const [valueCopy, setValueCopy] = useState(width * 5)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    setValue(width)
-    setValueCopy(width * 5)
+    setValue(widthShow)
+    setValueCopy(widthShow)
   }, [width])
 
 
@@ -209,7 +205,7 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
     input.type = 'number';
 
     input.style.position = 'absolute';
-    input.style.top = pos.y -3+ 'px';
+    input.style.top = pos.y - 3 + 'px';
     input.style.left = pos.x - 10 + 'px';
     input.className = style.input__size
     input.style.height = 20 + 6 + 'px';
@@ -264,7 +260,7 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
       <Line points={[width, 0, width, METRIC_SIZE]} stroke="black" />
       <Label onClick={change && check} x={width / 2 - 25} y={METRIC_SIZE / 2 - 20}>
         <Tag fill="white" stroke="black" />
-        <Text text={(value * 5).toFixed(0) + " mm"} padding={5} />
+        <Text text={((widthShow || value) * 5).toFixed(0) + " mm"} padding={5} />
       </Label>
     </Group>
   );
@@ -289,15 +285,16 @@ function Metrics(props) {
   const [horizontalComponents, setHorizontalComponents] = useState([])
 
 
-  const { verticalFrames, horizontalFrames } = useSelector(store => store.mainRectangles)
-  const { horizontalLeftFrames, leftRectangels } = useSelector(store => store.leftRectangels)
-  const { horizontalRightFrames, RightRectangels } = useSelector(store => store.rightRectangels)
+  const { verticalFrames, horizontalFrames, downVisible } = useSelector(store => store.mainRectangles)
+  const { horizontalLeftFrames, leftRectangels, LeftWallVisible } = useSelector(store => store.leftRectangels)
+  const { horizontalRightFrames, RightRectangels, RightWallVisible } = useSelector(store => store.rightRectangels)
 
 
   function processSection() {
 
     const copyVerticalFrames = [...verticalFrames]
     const copyHorizontalFrames = [...horizontalFrames]
+
 
     const sortedVertical = copyVerticalFrames.sort((itme1, item2) => itme1['x'] > item2['x'] ? 1 : -1);
 
@@ -308,28 +305,28 @@ function Metrics(props) {
 
     if (sortedVertical.length === 1) {
 
-      sortedVertical.forEach((item, index) => {
+      sortedVertical.forEach((item) => {
 
 
         testArr.push(<HorizontalMetric
-          key={sortedVertical[0].id}
-          x={0}
+          key={item.id}
+          x={5}
           y={0}
-          width={sortedVertical[0].x}
+          width={item.x - 5}
+          widthShow={LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
           itemSelect={item}
           verticalFrames={verticalFrames}
           widthLeftWall={widthLeftWall}
         />
           ,
           <HorizontalMetric
-            x={sortedVertical[index].x + FRAME_SIZE}
+            x={item.x + FRAME_SIZE}
             y={0}
-            width={width - sortedVertical[index].x - FRAME_SIZE}
+            width={width - item.x - FRAME_SIZE * 2}
+            widthShow={RightWallVisible ? width - item.x - FRAME_SIZESHOW : width - item.x - FRAME_SIZESHOW * 2}
             change={false}
           />
-
         )
-
       });
 
     } else {
@@ -338,10 +335,11 @@ function Metrics(props) {
         if (sortedVertical[0] === item) {
 
           testArr.push(<HorizontalMetric
-            key={sortedVertical[0].id}
-            x={0}
+            key={item.id}
+            x={5}
             y={0}
-            width={sortedVertical[0].x}
+            width={item.x - 5}
+            widthShow={LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
             itemSelect={item}
             verticalFrames={verticalFrames}
             widthLeftWall={widthLeftWall}
@@ -354,6 +352,7 @@ function Metrics(props) {
             x={sortedVertical[index - 1].x + FRAME_SIZE}
             y={0}
             width={item.x - sortedVertical[index - 1].x - FRAME_SIZE}
+            widthShow={item.x - sortedVertical[index - 1].x - FRAME_SIZESHOW}
             itemSelect={item}
             verticalFrames={verticalFrames}
             widthLeftWall={widthLeftWall}
@@ -366,6 +365,7 @@ function Metrics(props) {
             x={sortedVertical[index - 1].x + FRAME_SIZE}
             y={0}
             width={item.x - sortedVertical[index - 1].x - FRAME_SIZE}
+            widthShow={item.x - sortedVertical[index - 1].x - FRAME_SIZESHOW}
             itemSelect={item}
             verticalFrames={verticalFrames}
             widthLeftWall={widthLeftWall}
@@ -373,7 +373,12 @@ function Metrics(props) {
             <HorizontalMetric
               x={sortedVertical[index].x + FRAME_SIZE}
               y={0}
-              width={width - sortedVertical[index].x - FRAME_SIZE}
+              width={width - sortedVertical[index].x - FRAME_SIZE * 2}
+
+              widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
+              // если ширина встроенного как будто без рамок ( внутрення равна ширине)
+              // widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
+
               change={false}
             />
 
@@ -384,17 +389,15 @@ function Metrics(props) {
     }
 
     if (sortedHorizontal.length === 1) {
-      sortedHorizontal.forEach((item, index) => {
 
+      sortedHorizontal.forEach((item, index) => {
         verticalArr.push(<VerticalMetric
           x={0}
-          y={0}
-          height={item.y}
+          y={5}
+          height={item.y - 5}
+          heightShow={item.y - FRAME_SIZESHOW}
           itemSelect={item}
-
           horizontalFrames={horizontalFrames}
-
-
           widthLeftWall={widthLeftWall}
           lineSize={-150}
           type={'up'}
@@ -402,29 +405,26 @@ function Metrics(props) {
           <VerticalMetric
             x={0}
             y={item.y + FRAME_SIZE}
-            height={height - item.y - FRAME_SIZE}
+            height={height - item.y - (downVisible ? FRAME_SIZE * 2 + 14.2 : FRAME_SIZE)}
+            heightShow={height - item.y - (downVisible ? FRAME_SIZESHOW + 19.2 : FRAME_SIZESHOW)}
             change={false}
             lineSize={-150}
             type={'down'}
           />
-
         )
-
       })
-
-
     } else {
+
       sortedHorizontal.forEach((item, index) => {
         if (sortedHorizontal[0] === item) {
 
           verticalArr.push(<VerticalMetric
             x={0}
-            y={0}
-            height={item.y}
+            y={5}
+            height={item.y - 5}
+            heightShow={item.y - FRAME_SIZESHOW}
             itemSelect={item}
-
             horizontalFrames={horizontalFrames}
-
             widthLeftWall={widthLeftWall}
             lineSize={-150}
             type={'up'}
@@ -436,10 +436,9 @@ function Metrics(props) {
             x={0}
             y={sortedHorizontal[index - 1].y + FRAME_SIZE}
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
+            heightShow={item.y - sortedHorizontal[index - 1].y - FRAME_SIZESHOW}
             itemSelect={item}
-
             horizontalFrames={horizontalFrames}
-
             widthLeftWall={widthLeftWall}
           />)
         }
@@ -450,17 +449,16 @@ function Metrics(props) {
             x={0}
             y={sortedHorizontal[index - 1].y + FRAME_SIZE}
             height={item.y - sortedHorizontal[index - 1].y - FRAME_SIZE}
+            heightShow={item.y - sortedHorizontal[index - 1].y - FRAME_SIZESHOW}
             itemSelect={item}
-
             horizontalFrames={horizontalFrames}
-
-
             widthLeftWall={widthLeftWall}
           />,
             <VerticalMetric
               x={0}
               y={item.y + FRAME_SIZE}
-              height={height - item.y - FRAME_SIZE}
+              height={height - item.y - (downVisible ? FRAME_SIZE * 2 + 14.2 : FRAME_SIZE)}
+              heightShow={height - item.y - (downVisible ? FRAME_SIZESHOW + 19.2 : FRAME_SIZESHOW)}
               change={false}
               lineSize={-150}
               type={'down'}
@@ -473,8 +471,8 @@ function Metrics(props) {
     }
 
 
-    creataeLeftArrow()
-    creataeRightArrow()
+    // creataeLeftArrow()
+    // creataeRightArrow()
 
 
     setHorizontalComponents(testArr)
@@ -602,9 +600,7 @@ function Metrics(props) {
           itemSelect={item}
           horizontalRightFrames={horizontalRightFrames}
           setRightRectangels={setRightRectangels}
-
           widthLeftWall={widthLeftWall}
-
           right={true}
         />,
           <VerticalMetric
@@ -687,7 +683,7 @@ function Metrics(props) {
     processSection()
 
   }, [verticalFrames, horizontalFrames, width, height, widthLeftWall,
-    horizontalLeftFrames, horizontalRightFrames, leftRectangels, RightRectangels])
+    horizontalLeftFrames, horizontalRightFrames, leftRectangels, RightRectangels, downVisible, LeftWallVisible, RightWallVisible])
 
 
 
@@ -696,6 +692,7 @@ function Metrics(props) {
       x={100}>
       <VerticalMetric
         height={height}
+        heightShow={height}
         x={LeftWall ? -(60 + 100) : -60}
         y={0}
         change={false}
@@ -706,6 +703,7 @@ function Metrics(props) {
         x={widthLeftWall - 100}
         y={-25}
         width={width}
+        widthShow={width}
         change={false}
       />
       {/* <Group visible={LeftWall}>
@@ -726,7 +724,7 @@ function Metrics(props) {
         />
       </Group> */}
       <Group x={-(25 + 100)}>{verticalLeftComponents}</Group>
-      <Group x={width + (RightWall ? widthRightWall : 0) + (widthLeftWall - 100) + 50}>{verticalComponents}</Group>
+      <Group x={width + (RightWall ? widthRightWall : 0) + (widthLeftWall - 100) + 40}>{verticalComponents}</Group>
       <Group x={width + widthRightWall + (widthLeftWall - 100)}>{verticalRightComponents}</Group>
       <Group x={widthLeftWall - 100} y={height}>{horizontalComponents}</Group>
     </Group>

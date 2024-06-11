@@ -418,7 +418,7 @@ function MetricsDoors(props) {
             width={width}
             change={false}
          />
-         <Group visible={LeftWall}>
+         {/* <Group visible={LeftWall}>
             <HorizontalMetric
 
                x={-100}
@@ -426,15 +426,15 @@ function MetricsDoors(props) {
                width={widthLeftWall}
                change={false}
             />
-         </Group>
-         <Group visible={RightWall}>
+         </Group> */}
+         {/* <Group visible={RightWall}>
             <HorizontalMetric
                x={width + (widthLeftWall - 100)}
                y={-25}
                width={widthRightWall}
                change={false}
             />
-         </Group>
+         </Group> */}
          {/* <Group x={width + (RightWall ? widthRightWall : 0) + (widthLeftWall - 100) + 50}>{verticalComponents}</Group> */}
          {/* <HorizontalMetric
             x={widthLeftWall - 100}

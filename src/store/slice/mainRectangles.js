@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, current, } from '@reduxjs/toolkit';
 
 
 const FRAME_SIZE = 5;
+const FRAME_SIZESHOW = 3.2
 const colorMain = '#efcf9f'
 
 function checkPlaneIntersection(plane1X, plane1Y, plane1Width, plane1Height, plane2X, plane2Y, plane2Width, plane2Height) {
@@ -21,12 +22,12 @@ const widthCloset = 600
 const heightCloset = 400
 
 const initialState = {
-   Rectangels: [{ id: 1, width: widthCloset - 10, height: heightCloset - 10, x: 105, y: 5 }],
+   Rectangels: [{ id: 1, width: widthCloset - 10, height: heightCloset - 10, x: 105, y: 5, yShow: FRAME_SIZESHOW, xShow: 100 + FRAME_SIZESHOW }],
    verticalFrames: [],
    horizontalFrames: [],
    mainBackRectangles: [
 
-      { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: colorMain, colorType: 'frame', texture: null, },
+      { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: colorMain, changeType: 'frame', colorType: 'frame', texture: null, },
       { id: id(), width: widthCloset, height: heightCloset, x: 100, y: 0, fill: 'black', opacity: 0.2, colorType: 'shadow', texture: null, },
 
       {
@@ -35,7 +36,7 @@ const initialState = {
             105, 5,
             205, 30,
             205, heightCloset - 25,
-            105, heightCloset ],
+            105, heightCloset],
          // fill: colorMain,
          fill: 'gray',
          texture: null,
@@ -68,7 +69,7 @@ const initialState = {
          points: [
             105 + (widthCloset - 10 - 100), 30,
             105 + (widthCloset - 10), 5,
-            105 + (widthCloset - 10), heightCloset ,
+            105 + (widthCloset - 10), heightCloset,
             105 + (widthCloset - 10 - 100), heightCloset - 25],
          // fill: colorMain,
          fill: 'gray',
@@ -134,11 +135,19 @@ const initialState = {
    selectedTextura: {
       id: 'std',
       mainColor: '#efcf9f',
-      name: 'Стандартный',
+      title: 'Стандартный',
       cost: 500
    },
    intersection: false,
-   countBox: 0
+   countBox: 0,
+   countBarbel: 0,
+   countHanger: 0,
+   downVisible: false,
+   upVisible: true,
+   mainVisible: true,
+   srcMainImage:''
+
+
 }
 
 
@@ -212,12 +221,12 @@ const mainRectanglesSlice = createSlice({
          let intersected = false;
 
 
+
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
          const newFrame = {
             id: idFrame,
-
             width: itemSelect.width,
             height: FRAME_SIZE,
             color: state.colorMain,
@@ -259,7 +268,16 @@ const mainRectanglesSlice = createSlice({
 
 
             state.horizontalFrames = [...state.horizontalFrames,
-            { id: idFrame, width: itemSelect.width, shadowFrameId: idShadowFrame, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
+            {
+               id: idFrame,
+               width: itemSelect.width,
+               shadowFrameId: idShadowFrame,
+               height: FRAME_SIZE,
+               color: state.colorMain,
+               x: itemSelect?.x,
+               y: yk,
+               type: 'frame', draggable: true, derection: 2
+            }]
 
 
             state.Rectangels = newsect
@@ -270,11 +288,11 @@ const mainRectanglesSlice = createSlice({
 
       },
       createNewBurb(state, action) {
-         const { xk, yk, idd, widthLeftWall, widthCloset } = action.payload
+         const { xk, yk, idd, widthLeftWall, widthCloset, start } = action.payload
 
          const idElement = id()
 
-
+         console.log(start)
 
          let intersected = false;
          const heightBurb = 20
@@ -339,6 +357,11 @@ const mainRectanglesSlice = createSlice({
             ]
 
             // state.Rectangels = newsect
+            if (start == undefined){
+               state.countBarbel = state.countBarbel + 1
+
+
+            }
             state.elements = newElems
          }
 
@@ -351,10 +374,10 @@ const mainRectanglesSlice = createSlice({
 
          let intersected = false;
 
-         let heightBurb = 20
+         let heightBurb = 40
 
          if (!heightDrawer) {
-            heightBurb = 20
+            heightBurb = 40
             state.countBox = state.countBox + 1
          } else {
             heightBurb = heightDrawer
@@ -404,7 +427,7 @@ const mainRectanglesSlice = createSlice({
 
       },
       createHanger(state, action) {
-         const { xk, yk, idd, widthLeftWall } = action.payload
+         const { xk, yk, idd, start } = action.payload
 
          const idElement = id()
          const widthHanger = 100
@@ -440,6 +463,9 @@ const mainRectanglesSlice = createSlice({
                newElement
             ]
             state.elements = newElems
+            if (start == undefined) {
+               state.countHanger = state.countHanger + 1
+            }
          }
 
 
@@ -738,6 +764,12 @@ const mainRectanglesSlice = createSlice({
 
          if (type === 'drawer') {
             state.countBox = state.countBox - 1
+         }
+         if (type === 'hanger') {
+            state.countHanger = state.countHanger - 1
+         }
+         if (type === 'element') {
+            state.countBarbel = state.countBarbel - 1
          }
       },
       onBlurInputVertical(state, action) {
@@ -1335,14 +1367,38 @@ const mainRectanglesSlice = createSlice({
       },
       changeColorMain(state, action) {
 
-         const { mainColor, texture } = action.payload
+         const { mainColor, texture, LeftInside, RightInside, DownVisable, UpVisable } = action.payload
 
 
          state.mainBackRectangles = state.mainBackRectangles.map(item => {
             if (item.colorType !== 'shadow') {
-               item.fill = mainColor
-               item.texture = null
-               return item
+               if (item.changeType === 'left' && LeftInside) {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               } else if (item.changeType === 'right' && RightInside) {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               } else if (item.changeType === 'down' && DownVisable) {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               } else if (item.changeType === 'main') {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               } else if (item.changeType === 'up' && UpVisable) {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               } else if (item.changeType === 'frame') {
+                  item.fill = mainColor
+                  item.texture = null
+                  return item
+               }
+
+
             } return item
          })
 
@@ -1353,14 +1409,15 @@ const mainRectanglesSlice = createSlice({
                return item
             } else return item
          })
+
          state.colorMain = mainColor
          state.selectedTextura = texture
+         state.TextureMain = null
       },
       changeTextureMain(state, action) {
 
-         const { value, texture } = action.payload
+         const { value, texture, LeftInside, RightInside, DownVisable, UpVisable } = action.payload
 
-         state.selectedTextura = texture
 
          let mainTexture = null
 
@@ -1372,10 +1429,32 @@ const mainRectanglesSlice = createSlice({
 
 
          state.mainBackRectangles = state.mainBackRectangles.map(item => {
+
             if (item.colorType !== 'shadow') {
-               item.texture = mainTexture
-               return item
-            } else return item
+               if (item.changeType === 'left' && LeftInside) {
+                  item.texture = mainTexture
+                  return item
+               } else if (item.changeType === 'right' && RightInside) {
+                  item.texture = mainTexture
+                  return item
+               } else if (item.changeType === 'down' && DownVisable) {
+                  item.texture = mainTexture
+                  return item
+               } else if (item.changeType === 'main') {
+                  item.texture = mainTexture
+                  return item
+               } else if (item.changeType === 'up' && UpVisable) {
+                  item.texture = mainTexture
+                  return item
+               } else if (item.changeType === 'frame') {
+                  item.texture = mainTexture
+                  return item
+               }
+
+
+            } return item
+
+
          })
 
          state.Rectangels = state.Rectangels.map(item => {
@@ -1386,11 +1465,15 @@ const mainRectanglesSlice = createSlice({
          })
 
          state.TextureMain = mainTexture
-         // setTextureMain(mainTexture)
+
+         state.selectedTextura = texture
+
 
       },
       changeVisionMainWall(state, action) {
          const { value } = action.payload
+
+         state.mainVisible = value
 
          if (value === false) {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
@@ -1446,13 +1529,20 @@ const mainRectanglesSlice = createSlice({
          if (!value) {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.changeType === type) {
-                  return { ...item, fill: 'gray' }
+                  return { ...item, fill: 'gray', texture: null }
                } else return item
             })
          } else {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.changeType === type) {
-                  return { ...item, fill: state.colorMain }
+                  if (state.TextureMain !== null) {
+                     item.texture = state.TextureMain
+                     item.fill = null
+                  } else {
+                     item.fill = state.colorMain
+                     item.texture = null
+                  }
+                  return item
                } else return item
             })
          }
@@ -1463,6 +1553,7 @@ const mainRectanglesSlice = createSlice({
 
          const { value } = action.payload
 
+         state.upVisible = value
 
          if (!value) {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
@@ -1471,6 +1562,7 @@ const mainRectanglesSlice = createSlice({
                switch (item.changeType) {
                   case 'up':
                      item.fill = 'white'
+                     item.texture = null
                      item.points[1] = item.points[1] - 5
                      item.points[3] = item.points[3] - 5
                      item.points[5] = item.points[5] - 5
@@ -1502,7 +1594,13 @@ const mainRectanglesSlice = createSlice({
 
                switch (item.changeType) {
                   case 'up':
-                     item.fill = state.colorMain
+                     if (state.TextureMain !== null) {
+                        item.texture = state.TextureMain
+                        item.fill = null
+                     } else {
+                        item.fill = state.colorMain
+                        item.texture = null
+                     }
                      item.points[1] = item.points[1] + 5
                      item.points[3] = item.points[3] + 5
                      item.points[5] = item.points[5] + 5
@@ -1535,32 +1633,34 @@ const mainRectanglesSlice = createSlice({
 
          const { value } = action.payload
 
-
+         state.downVisible = value
          if (!value) {
+
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
 
 
                switch (item.changeType) {
                   case 'down':
                      item.fill = 'white'
-                     item.points[1] = item.points[1] + 5
-                     item.points[3] = item.points[3] + 5
-                     item.points[5] = item.points[5] + 5
-                     item.points[7] = item.points[7] + 5
+                     item.texture = null
+                     item.points[1] = item.points[1] + (5 + 14.2)
+                     item.points[3] = item.points[3] + (5 + 14.2)
+                     item.points[5] = item.points[5] + (5 + 14.2)
+                     item.points[7] = item.points[7] + (5 + 14.2)
                      return item
 
                   case 'left':
-                     item.points[5] = item.points[5] + 5
-                     item.points[7] = item.points[7] + 5
+                     item.points[5] = item.points[5] + (5 + 14.2)
+                     item.points[7] = item.points[7] + (5 + 14.2)
                      return item
 
                   case 'right':
-                     item.points[5] = item.points[5] + 5
-                     item.points[7] = item.points[7] + 5
+                     item.points[5] = item.points[5] + (5 + 14.2)
+                     item.points[7] = item.points[7] + (5 + 14.2)
                      return item
                   case 'main':
 
-                     item.height = item.height + 5
+                     item.height = item.height + (5 + 14.2)
                      return item
                   default:
                      return item
@@ -1570,27 +1670,33 @@ const mainRectanglesSlice = createSlice({
             })
          } else {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
-
                switch (item.changeType) {
                   case 'down':
-                     item.fill = state.colorMain
-                     item.points[1] = item.points[1] - 5
-                     item.points[3] = item.points[3] - 5
-                     item.points[5] = item.points[5] - 5
-                     item.points[7] = item.points[7] - 5
+                     if (state.TextureMain !== null) {
+                        item.texture = state.TextureMain
+                        item.fill = null
+                     } else {
+                        item.fill = state.colorMain
+                        item.texture = null
+                     }
+
+                     item.points[1] = item.points[1] - (5 + 14.2)
+                     item.points[3] = item.points[3] - (5 + 14.2)
+                     item.points[5] = item.points[5] - (5 + 14.2)
+                     item.points[7] = item.points[7] - (5 + 14.2)
                      return item
 
                   case 'left':
-                     item.points[5] = item.points[5] - 5
-                     item.points[7] = item.points[7] - 5
+                     item.points[5] = item.points[5] - (5 + 14.2)
+                     item.points[7] = item.points[7] - (5 + 14.2)
                      return item
 
                   case 'right':
-                     item.points[5] = item.points[5] - 5
-                     item.points[7] = item.points[7] - 5
+                     item.points[5] = item.points[5] - (5 + 14.2)
+                     item.points[7] = item.points[7] - (5 + 14.2)
                      return item
                   case 'main':
-                     item.height = item.height - 5
+                     item.height = item.height - (5 + 14.2)
                      return item
                   default:
                      return item
@@ -1613,6 +1719,11 @@ const mainRectanglesSlice = createSlice({
          // })
 
 
+      },
+      newImage(state,action){
+         const {image}=action.payload
+
+         state.srcMainImage=image
       }
    },
 
@@ -1635,7 +1746,8 @@ export const { createVertical, createHorizontal, createNewBurb,
    DragStartHanger, deleteElement,
    createDrawer, onBlurInputDrawer,
    changeWallInside, changeVisibableUp,
-   checkIntercetion, changeVisibableDown
+   checkIntercetion, changeVisibableDown,
+   newImage
 } = mainRectanglesSlice.actions;
 
 

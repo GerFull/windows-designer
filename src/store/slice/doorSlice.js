@@ -1,4 +1,5 @@
-import { createSlice, } from '@reduxjs/toolkit';
+import { configureStore, createSlice, } from '@reduxjs/toolkit';
+import { action } from 'mobx';
 
 
 const FRAME_SIZE = 5;
@@ -12,13 +13,15 @@ const initialState = {
    doors: [],
    doorRectangles: [],
    NumberOfDoors: 3,
-   colorFrame: '#efcf9f',
    colorMain: 'white',
    verticalDoorsFrame: [],
-   horizontalDoorsFrames: []
+   horizontalDoorsFrames: [],
+   styleFrame: true,
+   colorFrame:'#8d8d8d',
+   nameColorFrame:'Серый'
 }
 
-
+// #8d8d8d
 const DoorPageslice = createSlice({
    name: 'DoorPage',
    initialState,
@@ -31,7 +34,12 @@ const DoorPageslice = createSlice({
 
          for (let i = 0; i < countDoors; i++) {
 
-            doorsArr.push({ id: id(), x: ((widthLeftWall + 2.5) + (widthCloset / countDoors * i)), stroke: 'black' })
+            doorsArr.push({
+               id: id(),
+               // x: ((widthLeftWall + 2.5) + (widthCloset / countDoors * i)), 
+               x: ((widthLeftWall + (state.styleFrame ? 2.5 : 1.25)) + (widthCloset / countDoors * i)),
+               stroke: state.colorFrame
+            })
 
          }
 
@@ -40,12 +48,16 @@ const DoorPageslice = createSlice({
             doorsReactanglesArr.push(
                {
                   id: id(),
-                  x: ((widthLeftWall + 5) + (widthCloset / countDoors * i)),
-                  y: 5,
-                  width: (widthCloset / countDoors) - 10,
-                  height: heightCloset - 10,
+                  x: ((widthLeftWall + (state.styleFrame ? 5 : 2.5)) + (widthCloset / countDoors * i)),
+                  // x: ((widthLeftWall + 5) + (widthCloset / countDoors * i)),
+                  // y: 5,
+                  y: state.styleFrame ? 5 : 2.5,
+                  // width: (widthCloset / countDoors) - 10,
+                  width: (widthCloset / countDoors) - (state.styleFrame ? 10 : 5),
+                  // height: heightCloset - 10,
+                  height: heightCloset - (state.styleFrame ? 10 : 5),
                   color: state.colorMain,
-                  opacity: 0.5,
+                  opacity: 1,
                   numberDoor: i + 1
                }
 
@@ -58,51 +70,51 @@ const DoorPageslice = createSlice({
          state.NumberOfDoors = countDoors
 
       },
-      createDoorsVertical(state, action) {
-         const { xk, yk, idd, widthLeftWall } = action.payload
-         const idFrame = id()
+      // createDoorsVertical(state, action) {
+      //    const { xk, yk, idd, widthLeftWall } = action.payload
+      //    const idFrame = id()
 
-         const itemSelect = state.doorRectangles.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
-            (yk > item.y && yk < (item.y + item.height))))[0]
+      //    const itemSelect = state.doorRectangles.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
+      //       (yk > item.y && yk < (item.y + item.height))))[0]
 
-         const newsect = [...state.doorRectangles.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
-         { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: xk - itemSelect?.x, height: itemSelect?.height, x: itemSelect?.x, y: itemSelect?.y },
-         { id: idFrame, numberDoor: itemSelect.numberDoor, width: FRAME_SIZE, height: itemSelect.height, color: state.colorFrame, texture: state.TextureMain, x: xk, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 },
-         // { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, color: 'black', opacity: 0.2, x: xk, y: itemSelect?.y, draggable: true, derection: 1 },
-         { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE, height: itemSelect?.height, x: xk + FRAME_SIZE, y: itemSelect?.y }
+      //    const newsect = [...state.doorRectangles.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
+      //    { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: xk - itemSelect?.x, height: itemSelect?.height, x: itemSelect?.x, y: itemSelect?.y },
+      //    { id: idFrame, numberDoor: itemSelect.numberDoor, width: FRAME_SIZE, height: itemSelect.height, color: state.colorFrame, texture: state.TextureMain, x: xk, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 },
+      //    // { id: idFrame, width: FRAME_SIZE, height: itemSelect.height, color: 'black', opacity: 0.2, x: xk, y: itemSelect?.y, draggable: true, derection: 1 },
+      //    { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE, height: itemSelect?.height, x: xk + FRAME_SIZE, y: itemSelect?.y }
 
-         ]
-
-
-         state.verticalDoorsFrame = [...state.verticalDoorsFrame,
-         { id: idFrame, numberDoor: itemSelect.numberDoor, width: FRAME_SIZE, height: itemSelect.height, x: xk - widthLeftWall, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 }]
-
-         state.doorRectangles = newsect
-      },
-      createDoorsHorizontal(state, action) {
-         const { xk, yk, idd } = action.payload
-
-         const idFrame = id()
-
-         const itemSelect = state.doorRectangles.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
-            (yk > item.y && yk < (item.y + item.height))))[0]
+      //    ]
 
 
+      //    state.verticalDoorsFrame = [...state.verticalDoorsFrame,
+      //    { id: idFrame, numberDoor: itemSelect.numberDoor, width: FRAME_SIZE, height: itemSelect.height, x: xk - widthLeftWall, y: itemSelect?.y, type: 'frame', draggable: true, derection: 1 }]
 
-         const newsect = [...state.doorRectangles.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
-         { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
-         { id: idFrame, numberDoor: itemSelect.numberDoor, width: itemSelect.width, height: FRAME_SIZE, color: state.colorFrame, texture: state.TextureMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 },
-         // { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: 'black', opacity: 0.2, x: itemSelect?.x, y: yk, draggable: true, derection: 2 },
-         { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
+      //    state.doorRectangles = newsect
+      // },
+      // createDoorsHorizontal(state, action) {
+      //    const { xk, yk, idd } = action.payload
+
+      //    const idFrame = id()
+
+      //    const itemSelect = state.doorRectangles.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
+      //       (yk > item.y && yk < (item.y + item.height))))[0]
 
 
-         state.horizontalDoorsFrames = [...state.horizontalDoorsFrames,
-         { id: idFrame, numberDoor: itemSelect.numberDoor, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
+
+      //    const newsect = [...state.doorRectangles.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== idd),
+      //    { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
+      //    { id: idFrame, numberDoor: itemSelect.numberDoor, width: itemSelect.width, height: FRAME_SIZE, color: state.colorFrame, texture: state.TextureMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 },
+      //    // { id: idFrame, width: itemSelect.width, height: FRAME_SIZE, color: 'black', opacity: 0.2, x: itemSelect?.x, y: yk, draggable: true, derection: 2 },
+      //    { id: id(), numberDoor: itemSelect.numberDoor, color: state.colorMain, opacity: 0.5, width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
 
 
-         state.doorRectangles = newsect
+      //    state.horizontalDoorsFrames = [...state.horizontalDoorsFrames,
+      //    { id: idFrame, numberDoor: itemSelect.numberDoor, width: itemSelect.width, height: FRAME_SIZE, color: state.colorMain, x: itemSelect?.x, y: yk, type: 'frame', draggable: true, derection: 2 }]
 
-      },
+
+      //    state.doorRectangles = newsect
+
+      // },
 
       DragStarDoorsVertical(state, action) {
 
@@ -427,7 +439,10 @@ const DoorPageslice = createSlice({
 
       changeColorStroke(state, action) {
 
-         const { mainColor } = action.payload
+         const { mainColor,name } = action.payload
+
+         state.colorFrame=mainColor
+         state.nameColorFrame=name
 
          state.doors.map(item => {
 
@@ -441,7 +456,6 @@ const DoorPageslice = createSlice({
 
          const { color, id } = action.payload
 
-
          if (color.includes('Images')) {
             state.doorRectangles.map(item => {
 
@@ -453,6 +467,17 @@ const DoorPageslice = createSlice({
                } else return item
             })
 
+         } else if (color.includes('images')) {
+
+            state.doorRectangles.map(item => {
+
+               if (item.id === id) {
+                  item.texture = color
+                  item.color = null
+                  item.opacity = 1
+                  return item
+               } else return item
+            })
          } else {
             state.doorRectangles.map(item => {
 
@@ -469,7 +494,12 @@ const DoorPageslice = createSlice({
 
 
       },
+      changeThicknessFrame(state, action) {
+         const { value } = action.payload
 
+         state.styleFrame=value
+
+      }
    },
 
 });
@@ -482,7 +512,8 @@ export const {
    createDoors, DragStarDoorsVertical,
    DragStarDoorsHorizontal, deleteDoorsRectangle,
    onBlurInputDoorsVertical, onBlurInputDoorsHorizontal,
-   changeColorStroke, changeColorRect
+   changeColorStroke, changeColorRect,
+   changeThicknessFrame
 } = DoorPageslice.actions;
 
 
