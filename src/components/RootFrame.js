@@ -20,7 +20,8 @@ import {
   createHanger, createSideHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
   changeWallInside, changeVisibableUp,
-  changeVisibableDown
+  changeVisibableDown,
+  changeSizeWidthElements
 } from "../store/slice/mainRectangles";
 import {
   createHorizontalLeft, DragStarHorizontalLeft,
@@ -59,24 +60,10 @@ import UrlImage from "./Figures/UrlImage";
 
 
 
-
-
-// не выводить доп элементы
-// цвет рамки это профиль, серебро это серебро, текстурны все остальные
-// текстура какой именно
-
-// {
-//   name: венге
-//   система алюминий или сталь,
-//   название системы
-//   путь к картинке
-// }
+// при изменении размера ящики, ящик заходит на другой,пока хз что делать
 
 
 
-
-
-// сделать upvisible,mainVisible глобальными
 
 const FRAME_SIZE = 5;
 
@@ -105,9 +92,9 @@ const colors = [
 
 function RootFrame() {
   const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements, 
-    intersection, countBox,countHanger,countBarbel, selectedTextura,
-    downVisible,upVisible,mainVisible} = useSelector(store => store.mainRectangles)
+  const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements,
+    intersection, countBox, countHanger, countBarbel, selectedTextura,
+    downVisible, upVisible, mainVisible } = useSelector(store => store.mainRectangles)
   const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
   const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
 
@@ -331,10 +318,10 @@ function RootFrame() {
 
       switch (type) {
         case 'element':
-          dispatch(createNewBurb({ xk: x, yk: y, idd: id, widthLeftWall, widthCloset,start:true }))
+          dispatch(createNewBurb({ xk: x, yk: y, idd: id, widthLeftWall, widthCloset, start: true }))
           break;
         case 'hanger':
-          dispatch(createHanger({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall,start:true }))
+          dispatch(createHanger({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall, start: true }))
           break;
         case 'drawer':
           dispatch(createDrawer({ xk: x, yk: y, idd: id, heightDrawer: height }))
@@ -425,10 +412,10 @@ function RootFrame() {
       createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
     }
     if (props.attrs.derection === 2 && props.attrs.width < widthCloset - 10) {
-      createInput(props.getAbsolutePosition(), props.attrs.width, props.attrs)
+      createInput(props.getAbsolutePosition(), props.attrs.widthShow, props.attrs)
     }
     if (props.attrs.derection === 1 && props.attrs.height < heightCloset - 10) {
-      createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
+      createInput(props.getAbsolutePosition(), props.attrs.heightShow, props.attrs)
     }
 
   }
@@ -438,7 +425,6 @@ function RootFrame() {
 
 
   function createInput(pos, value, item) {
-
 
 
     const containerDiv = document.getElementById('container');
@@ -462,7 +448,9 @@ function RootFrame() {
 
     input.style.height = 20 + 3 + 'px';
     input.style.width = 100 + 3 + 'px';
-    input.value = (value + 2) * 5
+
+    input.value = value * 5
+
 
 
     let focusInput = false
@@ -488,13 +476,9 @@ function RootFrame() {
       input.onblur = (e) => dispatch(onBlurInputDrawer({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
     }
 
-
-
     wrap.appendChild(input);
 
     function removeInput(e) {
-
-
 
       console.log(e.target)
 
@@ -532,17 +516,17 @@ function RootFrame() {
 
     } else if (widthClosetChange < minWidth) {
 
-      if ((widthClosetChange / 5) < lastFrame + 50) {
+      // if ((widthClosetChange / 5) < lastFrame + 50) {
 
-        dispatch(changeWidth((lastFrame + 50)))
-        setWidthClosetChange((lastFrame + 50) * 5)
-        setWidthCanvas(widthCanvas + ((lastFrame + 50) - widthCloset))
-      } else {
+      //   dispatch(changeWidth((lastFrame + 50)))
+      //   setWidthClosetChange((lastFrame + 50) * 5)
+      //   setWidthCanvas(widthCanvas + ((lastFrame + 50) - widthCloset))
+      // } else {
         dispatch(changeWidth(minWidth / 5))
         setWidthClosetChange(minWidth)
         setWidthCanvas(widthCanvas + (minWidth / 5 - widthCloset))
 
-      }
+      // }
 
     } else {
       if ((widthClosetChange / 5) < lastFrame + 50) {
@@ -561,7 +545,6 @@ function RootFrame() {
     }
 
   }
-
 
 
 
@@ -645,19 +628,21 @@ function RootFrame() {
   //   dispatch(replaceWidthRight(widthRightWallChange / 5))
   // }
 
+    console.log(MainWall)
+
   const changeColor = (value, item) => {
 
 
 
     if (value.includes('Images')) {
-      dispatch(changeTextureMain({ value, texture: item , LeftInside, RightInside, DownVisable, UpVisable,MainWall}))
+      dispatch(changeTextureMain({ value, texture: item, LeftInside, RightInside, DownVisable, UpVisable, MainWall }))
       // dispatch(changeTextureLeft({ value }))
       // dispatch(changeTextureRight({ value }))
     } else {
 
       const mainColor = colors[value].mainColor
 
-      dispatch(changeColorMain({ mainColor: mainColor, texture: colors[value], LeftInside, RightInside, DownVisable,UpVisable }))
+      dispatch(changeColorMain({ mainColor: mainColor, texture: colors[value], LeftInside, RightInside, DownVisable, UpVisable,MainWall }))
       // dispatch(changeColorLeft({ mainColor: mainColor }))
       // dispatch(changeColorRight({ mainColor: mainColor }))
 
@@ -944,7 +929,9 @@ function RootFrame() {
                   <Rectangle
                     key={item.id}
                     width={item.width}
+                    widthShow={item.widthShow}
                     height={item.height}
+                    heightShow={item.heightShow}
                     // fill={item.color || 'black'}
                     fill={item.color}
                     listening={false}

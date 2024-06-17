@@ -35,15 +35,15 @@ const colors = [
 ]
 const colorsFrame = [{
    mainColor: '#8d8d8d',
-   name:'Серый'
+   name: 'Серый'
 },
 {
    mainColor: 'black',
-   name:'Черный'
+   name: 'Черный'
 },
 {
    mainColor: 'white',
-   name:'Белый'
+   name: 'Белый'
 },
 ]
 
@@ -86,45 +86,56 @@ function DoorPage() {
 
 
 
+
    const fetchData = async () => {
       await axios.get('http://127.0.0.1:8000/api/Textures/').then(res => setTextures(res.data)).catch(err => console.log(err))
    }
 
    useEffect(() => {
+
+      let sum = doorRectangles.reduce(
+         (accumulator, currentValue) => accumulator + currentValue.width,
+         0,
+      );
+
       fetchData()
       if (doors?.length == 0) {
          dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
-
-      if (doorRectangles[0]?.height !== heightCloset - 10) {
+      if (styleFrame && doorRectangles[0]?.height !== heightCloset - 10) {
          dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
-      if (doorRectangles[0]?.width !== widthCloset - 10) {
+      if (!styleFrame && doorRectangles[0]?.height !== heightCloset - 5) {
+         dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+      }
+      if (styleFrame && sum !== widthCloset - 30) {
+         dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+      }
+      if (!styleFrame && sum !== widthCloset - 15) {
          dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
       }
 
       setCountDoors(NumberOfDoors)
    }, [])
 
-
    // console.log(doors)
 
 
-   useEffect(() => {
+   // useEffect(() => {
 
 
 
-      const con = stageRef.current.container()
-      con.addEventListener('dragover', dragover)
+   //    const con = stageRef.current.container()
+   //    con.addEventListener('dragover', dragover)
 
-      con.addEventListener('drop', drop)
+   //    con.addEventListener('drop', drop)
 
-      return () => {
-         con.removeEventListener('dragover', dragover)
-         con.removeEventListener('drop', drop)
-      }
+   //    return () => {
+   //       con.removeEventListener('dragover', dragover)
+   //       con.removeEventListener('drop', drop)
+   //    }
 
-   }, [doorRectangles, derection, selectedRectId, doors])
+   // }, [doorRectangles, derection, selectedRectId, doors])
 
    const drop = (e) => {
 
@@ -292,7 +303,7 @@ function DoorPage() {
 
       } else {
          const mainColor = colorsFrame[value].mainColor
-         dispatch(changeColorStroke({ mainColor: mainColor ,name:colorsFrame[value].name}))
+         dispatch(changeColorStroke({ mainColor: mainColor, name: colorsFrame[value].name }))
       }
 
       setColorValue(value)
@@ -345,11 +356,30 @@ function DoorPage() {
 
    }
 
+
+
+   const onBlurDoor = (e) => {
+      if (e.target.localName !== 'canvas') {
+         setSelectedDoor(null)
+      }
+
+
+
+   }
+
+   const onBlurCanvasDoor = (e) => {
+     if (e.id == 'container') {
+      setSelectedDoor(null)
+   }
+
+
+   }
+
    return (
       <div className={style.doorsPage} id='1'>
 
 
-         <div className={style.doorsPage__container}>
+         <div onClick={e => onBlurDoor(e)} className={style.doorsPage__container}>
             <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png" /></div>
             <Stage
                width={widthCanvas}
@@ -357,6 +387,7 @@ function DoorPage() {
                ref={stageRef}
                id="container"
                style={{ position: 'relative' }}
+            onClick={e=>onBlurCanvasDoor(e.target.attrs)}
             >
 
                <Layer x={100} y={50} ref={LayerRef}
@@ -606,41 +637,53 @@ function DoorPage() {
                      )
                   }
                   {
-                     doorRectangles.map(rect =>
+                     doorRectangles.map(rect => {
 
-                        <Rectangle
-                           key={rect.id}
-                           id={rect.id}
-                           x={rect.x}
-                           y={rect.y}
-                           fill={rect.color}
-                           opacity={rect.opacity}
-                           selectDoor={selectDoor}
-                           changeStyleCursor={changeStyleCursor}
-                           width={rect.width}
-                           strokeWidth={1}
-                           draggable={rect.draggable}
-                           height={rect.height}
-                           type={rect.type}
-                           dragover={dragover}
-                           derection={rect.derection}
-                           onDragStart={() => onDragStartFrame(rect)}
-                           texture={rect?.texture && rect?.texture}
-                           onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, rect.id, rect.derection)}
-                        />
+                        return (
+
+                           <>
+                              <Rectangle
+                                 key={rect.id}
+                                 id={rect.id}
+                                 x={rect.x}
+                                 y={rect.y}
+                                 fill={rect.color}
+                                 opacity={rect.opacity}
+                                 selectDoor={selectDoor}
+                                 changeStyleCursor={changeStyleCursor}
+                                 width={rect.width}
+                                 strokeWidth={1}
+                                 draggable={rect.draggable}
+                                 height={rect.height}
+                                 type={rect.type}
+                                 dragover={dragover}
+                                 derection={rect.derection}
+                                 onDragStart={() => onDragStartFrame(rect)}
+                                 texture={rect?.texture && rect?.texture}
+                                 onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, rect.id, rect.derection)}
+                              />
+
+                              {
+                                 selectedDoor === rect.id && <Rectangle
+                                    x={rect.x}
+                                    y={rect.y}
+                                    width={rect.width}
+                                    height={rect.height}
+                                    fill={'#99ff99'}
+                                    opacity={0.2}
+
+                                 />
+
+
+
+                              }
+                           </>
+                        )
+
+                     }
                      )
                   }
-                  {
-                     selectedRectId && <Rectangle
-                        x={showObject.x}
-                        y={showObject.y}
-                        width={showObject.width}
-                        height={showObject.height}
-                        fill={'#99ff99'}
-                        opacity={showObject.opacity}
 
-                     />
-                  }
                   <MetricsDoors width={widthCloset}
                      height={heightCloset}
                      widthLeftWall={widthLeftWall}

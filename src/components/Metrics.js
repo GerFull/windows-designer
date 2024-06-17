@@ -13,7 +13,12 @@ const FRAME_SIZESHOW = 3.2
 
 
 
-function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, left = false, right = false,
+function VerticalMetric({ x, y,
+  height,
+  itemSelect,
+  change = true,
+  heightShow,
+  left = false, right = false,
   lineSize,
   type
 }) {
@@ -36,6 +41,8 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
   }, [height])
 
 
+  // console.log('value',value)
+  // console.log('heogth',heightShow)
 
   function check() {
     createInput(this.getAbsolutePosition())
@@ -66,15 +73,27 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
     input.style.width = 100 + 3 + 'px';
     input.onchange = (e) => setValueCopy(e.currentTarget?.value)
     input.value = valueCopy
-    input.onblur = (e) => onBlurInput(e.currentTarget?.value, containerDiv, wrap)
+    input.onblur = (e) => {
+      focusInput = false
+      onBlurInput(e.currentTarget?.value, containerDiv, wrap)
+    }
+
+    let focusInput = false
+
+    input.onfocus = (e) => {
+      focusInput = true
+    }
 
 
     wrap.appendChild(input);
 
     function removeInput(e) {
+
+
       if (e.target === wrap) {
-        containerDiv.removeChild(wrap);
-        wrap.removeEventListener("click", removeInput);
+
+        if (!focusInput) containerDiv?.removeChild(wrap)
+
       }
 
     }
@@ -92,53 +111,33 @@ function VerticalMetric({ x, y, height, itemSelect, change = true, heightShow, l
       setValue((valueInput) / 5)
 
     } else if (left === true) {
-      console.log('left')
 
       dispatch(changeHorizontalLeftFrames({ itemSelect, value, valueInput, heightShow }))
 
-
-
       if (heightShow !== undefined) {
-
 
         setValue((valueInput - 150) / 5)
 
       } else {
-
         setValue((valueInput) / 5)
       }
-
-
 
     } else if (right === true) {
 
       dispatch(changeHorizontalRightFrames({ itemSelect, value, valueInput, heightShow }))
 
-
-
-      // if (heightShow !== undefined) {
-
-      //   setValue((valueInput - 150) / 5)
-      // } else {
-
-
       setValue((valueInput) / 5)
-      // }
-
-
-
     }
-
-
-
-
-
 
 
     containerDiv.removeChild(wrap);
 
 
   }
+
+
+  // console.log('metric component', heightShow)
+  // console.log('metric component * 5', heightShow * 5)
 
   return (
     <Group x={x} y={y}>
@@ -179,7 +178,7 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
 
   useEffect(() => {
     setValue(widthShow)
-    setValueCopy(widthShow)
+    setValueCopy(widthShow * 5)
   }, [width])
 
 
@@ -191,6 +190,9 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
 
 
     const containerDiv = document.getElementById('container');
+
+    let focusInput = false
+
 
     var wrap = document.createElement('div');
     wrap.style.position = 'absolute';
@@ -211,16 +213,24 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
     input.style.height = 20 + 6 + 'px';
     input.style.width = 100 + 3 + 'px';
     input.onchange = (e) => setValueCopy(e.currentTarget?.value)
-    input.value = valueCopy
-    input.onblur = (e) => onBlurInput(e.currentTarget?.value, containerDiv, wrap)
+    input.value = valueCopy.toFixed(0)
+    input.onblur = (e) => {
+      focusInput = false
+      onBlurInput(e.currentTarget?.value, containerDiv, wrap)
 
+    }
+
+
+
+    input.onfocus = (e) => {
+      focusInput = true
+    }
 
     wrap.appendChild(input);
 
     function removeInput(e) {
       if (e.target === wrap) {
-        containerDiv.removeChild(wrap);
-        wrap.removeEventListener("click", removeInput);
+        if (!focusInput) containerDiv?.removeChild(wrap)
       }
 
     }
@@ -313,7 +323,7 @@ function Metrics(props) {
           x={5}
           y={0}
           width={item.x - 5}
-          widthShow={LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
+          widthShow={!LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
           itemSelect={item}
           verticalFrames={verticalFrames}
           widthLeftWall={widthLeftWall}
@@ -323,7 +333,7 @@ function Metrics(props) {
             x={item.x + FRAME_SIZE}
             y={0}
             width={width - item.x - FRAME_SIZE * 2}
-            widthShow={RightWallVisible ? width - item.x - FRAME_SIZESHOW : width - item.x - FRAME_SIZESHOW * 2}
+            widthShow={RightWallVisible ? width - item.x : width - item.x - FRAME_SIZESHOW}
             change={false}
           />
         )
@@ -339,7 +349,7 @@ function Metrics(props) {
             x={5}
             y={0}
             width={item.x - 5}
-            widthShow={LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
+            widthShow={!LeftWallVisible ? item.x : item.x - FRAME_SIZESHOW}
             itemSelect={item}
             verticalFrames={verticalFrames}
             widthLeftWall={widthLeftWall}
@@ -374,8 +384,7 @@ function Metrics(props) {
               x={sortedVertical[index].x + FRAME_SIZE}
               y={0}
               width={width - sortedVertical[index].x - FRAME_SIZE * 2}
-
-              widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
+              widthShow={RightWallVisible ? width - sortedVertical[index].x : width - sortedVertical[index].x - FRAME_SIZESHOW}
               // если ширина встроенного как будто без рамок ( внутрення равна ширине)
               // widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
 
@@ -405,6 +414,7 @@ function Metrics(props) {
           <VerticalMetric
             x={0}
             y={item.y + FRAME_SIZE}
+            // 19.2(19,2*5 = 96 ) размер пола , а 14,2 рамзер пола визуально
             height={height - item.y - (downVisible ? FRAME_SIZE * 2 + 14.2 : FRAME_SIZE)}
             heightShow={height - item.y - (downVisible ? FRAME_SIZESHOW + 19.2 : FRAME_SIZESHOW)}
             change={false}

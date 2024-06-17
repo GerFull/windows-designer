@@ -179,7 +179,7 @@ function PdfFile(props) {
                               <Text style={styles.title}>{props.InfoProduct.material}</Text>
                            </View>
 
-                           <View style={styles.textBox}>
+                           {/* <View style={styles.textBox}>
                               <Text style={styles.subtitle}>
                                  Толщина кромки:
                               </Text>
@@ -191,7 +191,7 @@ function PdfFile(props) {
                                  Цвет:
                               </Text>
                               <Text style={styles.title}>{props.InfoProduct.material}</Text>
-                           </View>
+                           </View> */}
 
                         </View>
 
@@ -254,6 +254,12 @@ function PdfFile(props) {
                            </View>
 
                         </View>
+                        <View style={styles.textBox}>
+                              <Text style={styles.subtitle}>
+                              Ящик для зеркальных\стекльянных дверей: {props.InfoProduct.box ? 'Да' : 'Нет'}
+                              </Text>
+                              <Text style={styles.title}></Text>
+                           </View>
 
                      </View>
 

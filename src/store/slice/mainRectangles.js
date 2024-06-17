@@ -22,7 +22,15 @@ const widthCloset = 600
 const heightCloset = 400
 
 const initialState = {
-   Rectangels: [{ id: 1, width: widthCloset - 10, height: heightCloset - 10, x: 105, y: 5, yShow: FRAME_SIZESHOW, xShow: 100 + FRAME_SIZESHOW }],
+   Rectangels: [{
+      id: 1,
+      width: widthCloset - 10,
+      widthShow: widthCloset,
+      height: heightCloset - 10,
+      heightShow: heightCloset - 3.2,
+      x: 105, y: 5,
+      yShow: FRAME_SIZESHOW, xShow: 100 + FRAME_SIZESHOW
+   }],
    verticalFrames: [],
    horizontalFrames: [],
    mainBackRectangles: [
@@ -145,7 +153,7 @@ const initialState = {
    downVisible: false,
    upVisible: true,
    mainVisible: true,
-   srcMainImage:''
+   srcMainImage: ''
 
 
 }
@@ -166,13 +174,17 @@ const mainRectanglesSlice = createSlice({
          const newFrame = {
             id: idFrame,
             width: FRAME_SIZE,
+
             height: itemSelect.height,
             color: state.colorMain,
             texture: state.TextureMain,
             x: xk,
             y: itemSelect?.y,
             type: 'frame',
-            draggable: true, derection: 1
+
+            draggable: true, derection: 1,
+            widthShow: FRAME_SIZESHOW,
+            heightShow: itemSelect.heightShow,
          }
 
          const shadowFrame = {
@@ -182,7 +194,9 @@ const mainRectanglesSlice = createSlice({
             color: 'black', opacity: 0.2,
             frameID: idFrame,
             x: xk, y: itemSelect?.y,
-            draggable: true, derection: 1
+            draggable: true, derection: 1,
+            widthShow: FRAME_SIZESHOW,
+            heightShow: itemSelect.heightShow,
          }
 
          let intersected = false;
@@ -198,10 +212,34 @@ const mainRectanglesSlice = createSlice({
          if (!intersected) {
 
             const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== shadowid).filter(item => item?.id !== mainId),
-            { id: id(), width: xk - itemSelect?.x, height: itemSelect?.height, x: itemSelect?.x, y: itemSelect?.y },
+            {
+               id: id(),
+               width: xk - itemSelect?.x,
+               height: itemSelect?.height,
+               x: itemSelect?.x,
+               y: itemSelect?.y,
+
+               widthShow: (xk - itemSelect?.xShow),
+               heightShow: itemSelect?.heightShow,
+               xShow: itemSelect?.xShow,
+               yShow: itemSelect?.yShow
+
+            },
                newFrame,
                shadowFrame,
-            { id: id(), width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE, height: itemSelect?.height, x: xk + FRAME_SIZE, y: itemSelect?.y }]
+            {
+               id: id(),
+               width: itemSelect.width - (xk - itemSelect.x) - FRAME_SIZE,
+               height: itemSelect?.height,
+               x: xk + FRAME_SIZE,
+               y: itemSelect?.y,
+
+               widthShow: itemSelect.widthShow - (xk - itemSelect.xShow) - FRAME_SIZESHOW,
+               heightShow: itemSelect?.heightShow,
+               xShow: xk + FRAME_SIZESHOW,
+               yShow: itemSelect?.yShow
+
+            }]
 
 
             state.verticalFrames = [...state.verticalFrames,
@@ -234,7 +272,9 @@ const mainRectanglesSlice = createSlice({
             x: itemSelect?.x, y: yk,
             type: 'frame',
             draggable: true,
-            derection: 2
+            derection: 2,
+            widthShow: itemSelect.widthShow,
+            heightShow: FRAME_SIZESHOW,
          }
 
          const shadowFrame = {
@@ -247,7 +287,9 @@ const mainRectanglesSlice = createSlice({
             x: itemSelect?.x,
             y: yk, draggable: true,
             derection: 2,
-            frameID: idFrame
+            frameID: idFrame,
+            widthShow: itemSelect.widthShow,
+            heightShow: FRAME_SIZESHOW,
          }
 
          // проверка что рамка не пересикается с элемнтов 
@@ -258,13 +300,46 @@ const mainRectanglesSlice = createSlice({
             }
          })
 
+
+         // console.log('heightShow 2', itemSelect?.heightShow)
+         // console.log('height', itemSelect?.height)
+         // console.log('heightShow 2', yk)
+
+
          if (!intersected) {
 
             const newsect = [...state.Rectangels.filter(item => item.id !== itemSelect?.id).filter(item => item?.id !== shadowid).filter(item => item?.id !== mainId),
-            { id: id(), width: itemSelect.width, height: yk - itemSelect?.y, x: itemSelect?.x, y: itemSelect?.y },
+            {
+               id: id(),
+               width: itemSelect.width,
+               height: yk - itemSelect?.y,
+               x: itemSelect?.x,
+               y: itemSelect?.y,
+
+
+               widthShow: itemSelect?.widthShow,
+               heightShow: yk - itemSelect?.yShow,
+               xShow: itemSelect?.xShow,
+               yShow: itemSelect?.yShow
+
+
+            },
                newFrame,
                shadowFrame,
-            { id: id(), width: itemSelect.width, height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE, x: itemSelect?.x, y: yk + FRAME_SIZE }]
+            {
+               id: id(),
+               width: itemSelect.width,
+               height: itemSelect?.height - (yk - itemSelect?.y) - FRAME_SIZE,
+               x: itemSelect?.x,
+               y: yk + FRAME_SIZE,
+
+
+               widthShow: itemSelect?.widthShow,
+               heightShow: itemSelect?.heightShow - (yk - itemSelect?.yShow) - FRAME_SIZESHOW,
+               xShow: itemSelect?.xShow,
+               yShow: yk + FRAME_SIZESHOW,
+
+            }]
 
 
             state.horizontalFrames = [...state.horizontalFrames,
@@ -292,7 +367,6 @@ const mainRectanglesSlice = createSlice({
 
          const idElement = id()
 
-         console.log(start)
 
          let intersected = false;
          const heightBurb = 20
@@ -316,6 +390,7 @@ const mainRectanglesSlice = createSlice({
                width: itemSelect.width - 100,
                height: heightBurb,
                src: './images/barbell.png',
+               widthType: 'all',
                x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
             }
 
@@ -325,6 +400,7 @@ const mainRectanglesSlice = createSlice({
                width: itemSelect.width - 50,
                height: heightBurb,
                src: './images/barbell.png',
+               widthType: 'left',
                x: itemSelect?.x + 50, y: yk, type: 'element', draggable: true, derection: 2
             }
          } else if (itemSelect.x + itemSelect.width === widthCloset + widthLeftWall - 5) {
@@ -333,6 +409,7 @@ const mainRectanglesSlice = createSlice({
                width: itemSelect.width - 50,
                height: heightBurb,
                src: './images/barbell.png',
+               widthType: 'right',
                x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
             }
          }
@@ -357,7 +434,7 @@ const mainRectanglesSlice = createSlice({
             ]
 
             // state.Rectangels = newsect
-            if (start == undefined){
+            if (start == undefined) {
                state.countBarbel = state.countBarbel + 1
 
 
@@ -625,7 +702,11 @@ const mainRectanglesSlice = createSlice({
                   return { ...item, width: 0, height: 0, }
                }
                else if (itemsFrameLeft.includes(item) || itemsLeft.includes(item)) {
-                  return { ...item, width: item.width + FRAME_SIZE + itemsRight.width }
+                  return {
+                     ...item, width: item.width + FRAME_SIZE + itemsRight.width,
+                     widthShow: item.widthShow + FRAME_SIZESHOW + itemsRight.widthShow
+
+                  }
                } else {
                   return item
                }
@@ -642,7 +723,11 @@ const mainRectanglesSlice = createSlice({
                   return { ...item, width: 0, height: 0, }
                }
                else if (itemsFrameLeft.includes(item) || itemsLeft.includes(item)) {
-                  return { ...item, width: item.width + max.width + FRAME_SIZE, }
+                  return {
+                     ...item, width: item.width + max.width + FRAME_SIZE,
+                     widthShow: item.widthShow + max.widthShow + FRAME_SIZESHOW
+
+                  }
                } else {
                   return item
                }
@@ -655,6 +740,7 @@ const mainRectanglesSlice = createSlice({
 
       },
       DragStarHorizontal(state, action) {
+
 
          const { itemSelect } = action.payload
 
@@ -693,7 +779,6 @@ const mainRectanglesSlice = createSlice({
          // максимальная высота рамки снизу
          const max = itemsFrameDown.length > 0 && itemsFrameDown?.reduce((acc, curr) => acc?.height > curr?.height ? acc : curr);
 
-
          // область поиска в которой ищутся все, что нужно удалить
          const searchArea = { x: itemSelect.x, y: itemSelect.y + itemSelect.height, width: itemSelect.width, height: max.height }
 
@@ -713,7 +798,10 @@ const mainRectanglesSlice = createSlice({
                   return { ...item, width: 0, height: 0, }
                }
                else if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
-                  return { ...item, height: item.height + FRAME_SIZE + itemDown.height }
+                  return {
+                     ...item, height: item.height + FRAME_SIZE + itemDown.height,
+                     heightShow: item.heightShow + FRAME_SIZESHOW + itemDown.heightShow
+                  }
                } else {
                   return item
                }
@@ -729,7 +817,10 @@ const mainRectanglesSlice = createSlice({
                   return { ...item, width: 0, height: 0, }
                }
                else if (itemsUp.includes(item) || itemsFrameUp.includes(item)) {
-                  return { ...item, height: item.height + max.height + FRAME_SIZE, }
+                  return {
+                     ...item, height: item.height + max.height + FRAME_SIZE,
+                     heightShow: item.heightShow + max.heightShow + FRAME_SIZESHOW
+                  }
                } else {
                   return item
                }
@@ -812,7 +903,7 @@ const mainRectanglesSlice = createSlice({
             )
             )
 
-            let changeValue = (value - 2) - height
+            let changeValue = value - height
 
             const minHeight = itemsDown?.reduce((acc, curr) => acc?.height < curr?.height ? acc : curr).height;
 
@@ -821,13 +912,22 @@ const mainRectanglesSlice = createSlice({
 
                state.Rectangels = state.Rectangels.map(item => {
                   if (item.id === itemSelect.id) {
-                     return { ...item, height: item.height + changeValue }
+                     return {
+                        ...item, height: item.height + changeValue,
+                        heightShow: item.heightShow + changeValue
+                     }
                   }
                   else if (itemsUp.includes(item)) {
-                     return { ...item, height: item.height + changeValue, }
+                     return {
+                        ...item, height: item.height + changeValue,
+                        heightShow: item.heightShow + changeValue
+                     }
                   }
                   else if (itemsDown.includes(item)) {
-                     return { ...item, y: item.y + changeValue, height: item.height - changeValue, }
+                     return {
+                        ...item, y: item.y + changeValue, height: item.height - changeValue,
+                        heightShow: item.heightShow - changeValue
+                     }
                   }
                   else if (item.id === FrameDown.id) {
                      return { ...item, y: item.y + changeValue }
@@ -877,7 +977,9 @@ const mainRectanglesSlice = createSlice({
 
          let changeValue = 0
 
-         changeValue = (value - 2) - width
+         changeValue = value - width
+
+
 
          if (FrameRight !== undefined) {
 
@@ -902,10 +1004,13 @@ const mainRectanglesSlice = createSlice({
 
                state.Rectangels = state.Rectangels.map(item => {
                   if (itemsLeftFrame.includes(item)) {
-                     return { ...item, width: item.width + changeValue, }
+                     return {
+                        ...item, width: item.width + changeValue,
+                        widthShow: item.widthShow + changeValue
+                     }
                   }
                   else if (itemsRightFrame.includes(item)) {
-                     return { ...item, x: item.x + changeValue, width: item.width - changeValue, }
+                     return { ...item, x: item.x + changeValue, width: item.width - changeValue, widthShow: item.widthShow - changeValue }
                   }
                   else if (item.id === FrameRight.id) {
                      return { ...item, x: item.x + changeValue }
@@ -962,11 +1067,33 @@ const mainRectanglesSlice = createSlice({
             ((item.x + item.width) === ((widthCloset - 5) + widthLeftWall))
          )
 
+         const lastElements = state.elements.filter(item => {
+            if (item?.widthType === 'all') {
+               return ((item.x + item.width + 50) === ((widthCloset - 5) + widthLeftWall))
+
+            } else if (item?.widthType === 'right') {
+               return ((item.x + item.width + 50) === ((widthCloset - 5) + widthLeftWall))
+            } else {
+               return ((item.x + item.width) === ((widthCloset - 5) + widthLeftWall))
+            }
+
+         }
+         )
+
+
+
 
          if (widthClosetChange > maxWidth) {
 
             state.Rectangels = state.Rectangels.map(item => {
                if (lastItems.includes(item)) {
+                  return { ...item, width: item.width + (maxWidth / 5 - widthCloset) }
+               } else {
+                  return item
+               }
+            })
+            state.elements = state.elements.map(item => {
+               if (lastElements.includes(item)) {
                   return { ...item, width: item.width + (maxWidth / 5 - widthCloset) }
                } else {
                   return item
@@ -991,35 +1118,49 @@ const mainRectanglesSlice = createSlice({
 
          } else if (widthClosetChange < minWidth) {
 
-            if ((widthClosetChange / 5) < lastFrame + 50) {
+            // if ((widthClosetChange / 5) < lastFrame + 50) {
+
+            //    state.Rectangels = state.Rectangels.map(item => {
+            //       if (lastItems.includes(item)) {
+            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
+            //       } else {
+            //          return item
+            //       }
+            //    })
+            //    state.elements = state.elements.map(item => {
+            //       if (lastElements.includes(item)) {
+            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
+            //       } else {
+            //          return item
+            //       }
+            //    })
+            //    state.mainBackRectangles = state.mainBackRectangles.map(item => {
+            //       if (item?.changeType === 'up' || item?.changeType === 'down') {
+            //          item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
+            //          item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
+            //          return item
+            //       } else if (item?.changeType === 'right') {
+            //          item.points[0] = item.points[0] + ((lastFrame + 50) - widthCloset)
+            //          item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
+            //          item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
+            //          item.points[6] = item.points[6] + ((lastFrame + 50) - widthCloset)
+            //          return item
+            //       } {
+            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
+            //       }
+            //    })
+
+            // } else {
 
                state.Rectangels = state.Rectangels.map(item => {
                   if (lastItems.includes(item)) {
-                     return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
+                     return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
                   } else {
                      return item
                   }
                })
-               state.mainBackRectangles = state.mainBackRectangles.map(item => {
-                  if (item?.changeType === 'up' || item?.changeType === 'down') {
-                     item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
-                     item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
-                     return item
-                  } else if (item?.changeType === 'right') {
-                     item.points[0] = item.points[0] + ((lastFrame + 50) - widthCloset)
-                     item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
-                     item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
-                     item.points[6] = item.points[6] + ((lastFrame + 50) - widthCloset)
-                     return item
-                  } {
-                     return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
-                  }
-               })
-
-            } else {
-
-               state.Rectangels = state.Rectangels.map(item => {
-                  if (lastItems.includes(item)) {
+               state.elements = state.elements.map(item => {
+                  if (lastElements.includes(item)) {
                      return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
                   } else {
                      return item
@@ -1041,12 +1182,19 @@ const mainRectanglesSlice = createSlice({
                   }
                })
 
-            }
+            // }
          } else {
 
             if ((widthClosetChange / 5) < lastFrame + 50) {
                state.Rectangels = state.Rectangels.map(item => {
                   if (lastItems.includes(item)) {
+                     return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
+                  } else {
+                     return item
+                  }
+               })
+               state.elements = state.elements.map(item => {
+                  if (lastElements.includes(item)) {
                      return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
                   } else {
                      return item
@@ -1077,7 +1225,13 @@ const mainRectanglesSlice = createSlice({
                      return item
                   }
                })
-
+               state.elements = state.elements.map(item => {
+                  if (lastElements.includes(item)) {
+                     return { ...item, width: item.width + ((widthClosetChange / 5) - widthCloset) }
+                  } else {
+                     return item
+                  }
+               })
                state.mainBackRectangles = state.mainBackRectangles.map(item => {
                   if (item?.changeType === 'up' || item?.changeType === 'down') {
                      item.points[2] = item.points[2] + ((widthClosetChange / 5) - widthCloset)
@@ -1367,7 +1521,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeColorMain(state, action) {
 
-         const { mainColor, texture, LeftInside, RightInside, DownVisable, UpVisable } = action.payload
+         const { mainColor, texture, LeftInside, RightInside, DownVisable, UpVisable,MainWall } = action.payload
 
 
          state.mainBackRectangles = state.mainBackRectangles.map(item => {
@@ -1384,7 +1538,7 @@ const mainRectanglesSlice = createSlice({
                   item.fill = mainColor
                   item.texture = null
                   return item
-               } else if (item.changeType === 'main') {
+               } else if (item.changeType === 'main' && MainWall) {
                   item.fill = mainColor
                   item.texture = null
                   return item
@@ -1416,7 +1570,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeTextureMain(state, action) {
 
-         const { value, texture, LeftInside, RightInside, DownVisable, UpVisable } = action.payload
+         const { value, texture, LeftInside, RightInside, DownVisable, UpVisable,MainWall } = action.payload
 
 
          let mainTexture = null
@@ -1440,7 +1594,7 @@ const mainRectanglesSlice = createSlice({
                } else if (item.changeType === 'down' && DownVisable) {
                   item.texture = mainTexture
                   return item
-               } else if (item.changeType === 'main') {
+               } else if (item.changeType === 'main' && MainWall) {
                   item.texture = mainTexture
                   return item
                } else if (item.changeType === 'up' && UpVisable) {
@@ -1479,6 +1633,7 @@ const mainRectanglesSlice = createSlice({
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.type === 'backWall' && item.colorType !== 'shadow') {
                   item.fill = 'white'
+                  item.texture = null
                   return item
                } if (item.colorType === 'shadow' && item.type === 'backWallShadow') {
                   item.opacity = 0
@@ -1488,7 +1643,14 @@ const mainRectanglesSlice = createSlice({
          } else {
             state.mainBackRectangles = state.mainBackRectangles.map(item => {
                if (item.type === 'backWall' && item.colorType !== 'shadow') {
-                  item.fill = state.colorMain
+
+                  if (state.TextureMain !== null) {
+                     item.texture = state.TextureMain
+                     item.fill = null
+                  } else {
+                     item.fill = state.colorMain
+                     item.texture = null
+                  }
                   return item
                } if (item.colorType === 'shadow' && item.type === 'backWallShadow') {
                   item.opacity = 0.2
@@ -1720,10 +1882,10 @@ const mainRectanglesSlice = createSlice({
 
 
       },
-      newImage(state,action){
-         const {image}=action.payload
+      newImage(state, action) {
+         const { image } = action.payload
 
-         state.srcMainImage=image
+         state.srcMainImage = image
       }
    },
 

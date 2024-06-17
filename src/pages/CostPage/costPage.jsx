@@ -21,7 +21,7 @@ function CostPage() {
 
 
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall, depthCloset } = useSelector(store => store.globalVariable)
-   const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura, mainVisible, countHanger, countBarbel} = useSelector(store => store.mainRectangles)
+   const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura, mainVisible, countHanger, countBarbel } = useSelector(store => store.mainRectangles)
    const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
    const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles, NumberOfDoors, styleFrame, nameColorFrame } = useSelector(store => store.doors)
@@ -54,7 +54,7 @@ function CostPage() {
 
    useEffect(() => {
       console.log('asd')
-      setImage((pref)=>canvasRef.current.toDataURL())
+      setImage((pref) => canvasRef.current.toDataURL())
       setImageInside((pref) => canvasInsideRef.current.toDataURL())
 
    },)
@@ -171,7 +171,8 @@ function CostPage() {
       countBox: countBox,
       countBarbel: countBarbel,
       countHanger: countHanger,
-      date: currentDay()
+      date: currentDay(),
+      box:box
    }
 
 
@@ -181,7 +182,7 @@ function CostPage() {
          <div className={style.doorsPage__pdf} id="pdfDoc">
             <Stage
                width={widthCanvas}
-               height={500}
+               height={600}
                ref={canvasRef}
                id="container"
                scale={{ x: 0.9, y: 0.9 }}
@@ -401,7 +402,7 @@ function CostPage() {
          <div className={style.doorsPage__pdf} id="pdfDocInside">
             <Stage
                width={widthCanvasInside}
-               height={500}
+               height={600}
                ref={canvasInsideRef}
                id="container"
                scale={{ x: 0.9, y: 0.9 }}
@@ -444,7 +445,7 @@ function CostPage() {
                            }
                         })
                      }
-                     {/* {
+                     {
                         elements.map(item =>
 
                            <UrlImage
@@ -455,7 +456,7 @@ function CostPage() {
 
                         )
 
-                     } */}
+                     }
                   </Group>
 
                   <Group visible={LeftWallVisible}>
@@ -800,7 +801,7 @@ function CostPage() {
                   <Layer x={100} y={50} ref={LayerRef}
                      listening={false}
                   >
-     
+
                      <Group>
                         {
                            mainBackRectangles.map((item) => {
@@ -984,12 +985,6 @@ function CostPage() {
 
 
                <div className={style.menu__container}>
-                  <div className={style.menu__inputs}>
-
-                     <input placeholder="Имя" className={style.input__text} />
-                     <input placeholder="Телефон" className={style.input__text} />
-                     <input placeholder="Город" className={style.input__text} />
-                  </div>
                   <label className={style.checkbox}>
                      <input checked={box} onChange={e => setBox(e.target.checked)} type="checkbox" />
                      <div className={style.checkbox__checkmark}></div>
@@ -1003,7 +998,7 @@ function CostPage() {
                </div>
 
                <div className={style.menu__btnContainer}>
-                  <PDFDownloadLink onClick={()=>setImageInside((pref) => canvasInsideRef?.current?.toDataURL())} document={<PdfFile InfoProduct={InfoProduct} image={image} imageInside={imageInside} />} filename="FORM">
+                  <PDFDownloadLink onClick={() => setImageInside((pref) => canvasInsideRef?.current?.toDataURL())} document={<PdfFile InfoProduct={InfoProduct} image={image} imageInside={imageInside} />} filename="FORM">
                      {({ loading }) => (loading ?
                         <div className={style.menu__backBtn} ><p>Загрузка</p></div> :
                         <div className={style.menu__backBtn} ><p>Заказать</p></div>)}
