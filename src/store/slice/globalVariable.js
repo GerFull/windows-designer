@@ -4,9 +4,11 @@ import { createSlice, createAsyncThunk, } from '@reduxjs/toolkit';
 
 const initialState = {
    minHeight: 1000,
-   maxHeight: 3000,
+   maxHeight: 3500,
    maxWidth: 5000,
-   minWidth: 2000,
+   minWidth: 1500,
+   maxDepth: 1200,
+   minDepth: 300,
    widthCloset: 600,
    heightCloset: 400,
    depthCloset:120,

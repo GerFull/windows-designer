@@ -1048,14 +1048,42 @@ const mainRectanglesSlice = createSlice({
          containerDiv.removeChild(wrap);
 
          let changeValue = 0
+         let intersected = false;
 
          changeValue = value - height
 
-         state.elements = state.elements.map(item => {
-            if (item.id === itemSelect.id) {
-               return { ...item, height: item.height + changeValue, copyHeight: item.copyHeight + changeValue }
-            } else return item
+
+         const newElement = {
+            width: itemSelect.width,
+            height: itemSelect.height + changeValue,
+            x: itemSelect.x, y: itemSelect.y - changeValue,
+         }
+
+  
+
+         state.elements.filter(item => item.id !== itemSelect.id).forEach(item => {
+            console.log(current(item))
+            if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height)) {
+               intersected = true
+            }
          })
+
+         state.Rectangels.filter(item => item.type === 'frame').forEach(item => {
+            if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height)) {
+               intersected = true
+            }
+         })
+
+         if (!intersected) {
+
+            state.elements = state.elements.map(item => {
+               if (item.id === itemSelect.id) {
+                  return { ...item, height: item.height + changeValue, y: item.y - changeValue, copyHeight: item.copyHeight + changeValue }
+               } else return item
+            })
+         }
+
+
 
 
       },
@@ -1152,35 +1180,35 @@ const mainRectanglesSlice = createSlice({
 
             // } else {
 
-               state.Rectangels = state.Rectangels.map(item => {
-                  if (lastItems.includes(item)) {
-                     return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
-                  } else {
-                     return item
-                  }
-               })
-               state.elements = state.elements.map(item => {
-                  if (lastElements.includes(item)) {
-                     return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
-                  } else {
-                     return item
-                  }
-               })
-               state.mainBackRectangles = state.mainBackRectangles.map(item => {
-                  if (item?.changeType === 'up' || item?.changeType === 'down') {
-                     item.points[2] = item.points[2] + (minWidth / 5 - widthCloset)
-                     item.points[4] = item.points[4] + (minWidth / 5 - widthCloset)
-                     return item
-                  } else if (item?.changeType === 'right') {
-                     item.points[0] = item.points[0] + (minWidth / 5 - widthCloset)
-                     item.points[2] = item.points[2] + (minWidth / 5 - widthCloset)
-                     item.points[4] = item.points[4] + (minWidth / 5 - widthCloset)
-                     item.points[6] = item.points[6] + (minWidth / 5 - widthCloset)
-                     return item
-                  } {
-                     return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
-                  }
-               })
+            state.Rectangels = state.Rectangels.map(item => {
+               if (lastItems.includes(item)) {
+                  return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
+               } else {
+                  return item
+               }
+            })
+            state.elements = state.elements.map(item => {
+               if (lastElements.includes(item)) {
+                  return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
+               } else {
+                  return item
+               }
+            })
+            state.mainBackRectangles = state.mainBackRectangles.map(item => {
+               if (item?.changeType === 'up' || item?.changeType === 'down') {
+                  item.points[2] = item.points[2] + (minWidth / 5 - widthCloset)
+                  item.points[4] = item.points[4] + (minWidth / 5 - widthCloset)
+                  return item
+               } else if (item?.changeType === 'right') {
+                  item.points[0] = item.points[0] + (minWidth / 5 - widthCloset)
+                  item.points[2] = item.points[2] + (minWidth / 5 - widthCloset)
+                  item.points[4] = item.points[4] + (minWidth / 5 - widthCloset)
+                  item.points[6] = item.points[6] + (minWidth / 5 - widthCloset)
+                  return item
+               } {
+                  return { ...item, width: item.width + (minWidth / 5 - widthCloset) }
+               }
+            })
 
             // }
          } else {
@@ -1428,7 +1456,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeHorizontalFrames(state, action) {
 
-         const { itemSelect, value, valueInput } = action.payload
+         const { itemSelect, changeValue } = action.payload
 
 
          const itemsDown = state.Rectangels.filter(item => (
@@ -1448,15 +1476,15 @@ const mainRectanglesSlice = createSlice({
 
          state.Rectangels = state.Rectangels.map(item => {
             if (item.id === itemSelect.id) {
-               return { ...item, y: item.y + ((valueInput / 5) - value) }
+               return { ...item, y: item.y + changeValue }
             } else if (item.id === itemSelect.shadowFrameId) {
-               return { ...item, y: item.y + ((valueInput / 5) - value) }
+               return { ...item, y: item.y + changeValue }
             }
             else if (itemsUp.includes(item)) {
-               return { ...item, height: item.height + ((valueInput / 5) - value), }
+               return { ...item, height: item.height + changeValue, }
             }
             else if (itemsDown.includes(item)) {
-               return { ...item, y: item.y + ((valueInput / 5) - value), height: item.height - ((valueInput / 5) - value), }
+               return { ...item, y: item.y + changeValue, height: item.height - changeValue, }
             }
             else {
                return item
@@ -1465,9 +1493,9 @@ const mainRectanglesSlice = createSlice({
 
          state.horizontalFrames = state.horizontalFrames.map(item => {
             if (item.id === itemSelect.id) {
-               return { ...item, y: item.y + ((valueInput / 5) - value) }
+               return { ...item, y: item.y + changeValue }
             } else if (item.id === itemSelect.shadowFrameId) {
-               return { ...item, y: item.y + ((valueInput / 5) - value) }
+               return { ...item, y: item.y + changeValue }
             }
             else {
                return item
@@ -1477,7 +1505,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeVerticalFrames(state, action) {
 
-         const { itemSelect, value, valueInput, widthLeftWall } = action.payload
+         const { itemSelect, changeValue, widthLeftWall } = action.payload
 
          const itemsLeft = state.Rectangels.filter(item => (
             (item.y >= itemSelect.y && ((item.y + item.height) <= (itemSelect.y + itemSelect.height))) &&
@@ -1493,15 +1521,15 @@ const mainRectanglesSlice = createSlice({
 
          state.Rectangels = state.Rectangels.map(item => {
             if (item.id === itemSelect.id) {
-               return { ...item, x: item.x + ((valueInput / 5) - value) }
+               return { ...item, x: item.x + changeValue }
             } else if (item.id === itemSelect.shadowFrameId) {
-               return { ...item, x: item.x + ((valueInput / 5) - value) }
+               return { ...item, x: item.x + changeValue }
             }
             else if (itemsLeft.includes(item)) {
-               return { ...item, width: item.width + ((valueInput / 5) - value), }
+               return { ...item, width: item.width + changeValue, }
             }
             else if (itemsRight.includes(item)) {
-               return { ...item, x: item.x + ((valueInput / 5) - value), width: item.width - ((valueInput / 5) - value), }
+               return { ...item, x: item.x + changeValue, width: item.width - changeValue, }
             }
             else {
                return item
@@ -1510,9 +1538,9 @@ const mainRectanglesSlice = createSlice({
 
          state.verticalFrames = state.verticalFrames.map(item => {
             if (item.id === itemSelect.id) {
-               return { ...item, x: item.x + ((valueInput / 5) - value) }
+               return { ...item, x: item.x + changeValue }
             } else if (item.id === itemSelect.shadowFrameId) {
-               return { ...item, x: item.x + ((valueInput / 5) - value) }
+               return { ...item, x: item.x + changeValue }
             }
             else {
                return item
@@ -1521,7 +1549,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeColorMain(state, action) {
 
-         const { mainColor, texture, LeftInside, RightInside, DownVisable, UpVisable,MainWall } = action.payload
+         const { mainColor, texture, LeftInside, RightInside, DownVisable, UpVisable, MainWall } = action.payload
 
 
          state.mainBackRectangles = state.mainBackRectangles.map(item => {
@@ -1570,7 +1598,7 @@ const mainRectanglesSlice = createSlice({
       },
       changeTextureMain(state, action) {
 
-         const { value, texture, LeftInside, RightInside, DownVisable, UpVisable,MainWall } = action.payload
+         const { value, texture, LeftInside, RightInside, DownVisable, UpVisable, MainWall } = action.payload
 
 
          let mainTexture = null

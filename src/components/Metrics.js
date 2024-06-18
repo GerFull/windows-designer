@@ -72,7 +72,7 @@ function VerticalMetric({ x, y,
     input.style.height = 20 + 6 + 'px';
     input.style.width = 100 + 3 + 'px';
     input.onchange = (e) => setValueCopy(e.currentTarget?.value)
-    input.value = valueCopy
+    input.value = valueCopy.toFixed(0)
     input.onblur = (e) => {
       focusInput = false
       onBlurInput(e.currentTarget?.value, containerDiv, wrap)
@@ -105,9 +105,17 @@ function VerticalMetric({ x, y,
 
   const onBlurInput = (valueInput, containerDiv, wrap) => {
 
+    // console.log(itemSelect)
+    let changeValue = 0
+    type == 'down' ? changeValue = -(valueInput / 5 - value) : changeValue = (valueInput / 5 - value)
 
     if (left === false && right === false) {
-      dispatch(changeHorizontalFrames({ itemSelect, value, valueInput }))
+
+
+
+      console.log('changeValue', -(valueInput / 5 - value))
+
+      dispatch(changeHorizontalFrames({ itemSelect, changeValue: changeValue }))
       setValue((valueInput) / 5)
 
     } else if (left === true) {
@@ -136,8 +144,6 @@ function VerticalMetric({ x, y,
   }
 
 
-  // console.log('metric component', heightShow)
-  // console.log('metric component * 5', heightShow * 5)
 
   return (
     <Group x={x} y={y}>
@@ -170,7 +176,7 @@ function VerticalMetric({ x, y,
 }
 
 
-function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWall, widthShow }) {
+function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWall, widthShow, type }) {
 
   const [value, setValue] = useState(0)
   const [valueCopy, setValueCopy] = useState(width * 5)
@@ -245,7 +251,13 @@ function HorizontalMetric({ x, y, width, itemSelect, change = true, widthLeftWal
 
   const onBlurInput = (valueInput, containerDiv, wrap) => {
 
-    dispatch(changeVerticalFrames({ itemSelect, value, valueInput, widthLeftWall }))
+    let changeValue = 0
+
+    type == 'right' ? changeValue = -(valueInput / 5 - value) : changeValue = (valueInput / 5 - value)
+
+    // ((valueInput / 5) - value)
+
+    dispatch(changeVerticalFrames({ itemSelect, changeValue, widthLeftWall }))
 
     containerDiv.removeChild(wrap);
 
@@ -310,7 +322,7 @@ function Metrics(props) {
 
     const sortedHorizontal = copyHorizontalFrames.sort((itme1, item2) => itme1['y'] > item2['y'] ? 1 : -1);
 
-    const testArr = []
+    const horizntalArr = []
     const verticalArr = []
 
     if (sortedVertical.length === 1) {
@@ -318,7 +330,7 @@ function Metrics(props) {
       sortedVertical.forEach((item) => {
 
 
-        testArr.push(<HorizontalMetric
+        horizntalArr.push(<HorizontalMetric
           key={item.id}
           x={5}
           y={0}
@@ -333,8 +345,10 @@ function Metrics(props) {
             x={item.x + FRAME_SIZE}
             y={0}
             width={width - item.x - FRAME_SIZE * 2}
+            itemSelect={item}
+            type={'right'}
             widthShow={RightWallVisible ? width - item.x : width - item.x - FRAME_SIZESHOW}
-            change={false}
+
           />
         )
       });
@@ -344,7 +358,7 @@ function Metrics(props) {
       sortedVertical.forEach((item, index) => {
         if (sortedVertical[0] === item) {
 
-          testArr.push(<HorizontalMetric
+          horizntalArr.push(<HorizontalMetric
             key={item.id}
             x={5}
             y={0}
@@ -357,7 +371,7 @@ function Metrics(props) {
         }
 
         if (item !== sortedVertical[0] && item !== sortedVertical[sortedVertical.length - 1]) {
-          testArr.push(<HorizontalMetric
+          horizntalArr.push(<HorizontalMetric
             key={index}
             x={sortedVertical[index - 1].x + FRAME_SIZE}
             y={0}
@@ -371,7 +385,7 @@ function Metrics(props) {
 
         if (item === sortedVertical[sortedVertical.length - 1]) {
 
-          testArr.push(<HorizontalMetric
+          horizntalArr.push(<HorizontalMetric
             x={sortedVertical[index - 1].x + FRAME_SIZE}
             y={0}
             width={item.x - sortedVertical[index - 1].x - FRAME_SIZE}
@@ -384,11 +398,12 @@ function Metrics(props) {
               x={sortedVertical[index].x + FRAME_SIZE}
               y={0}
               width={width - sortedVertical[index].x - FRAME_SIZE * 2}
+              itemSelect={item}
+              type={'right'}
               widthShow={RightWallVisible ? width - sortedVertical[index].x : width - sortedVertical[index].x - FRAME_SIZESHOW}
-              // если ширина встроенного как будто без рамок ( внутрення равна ширине)
-              // widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
+            // если ширина встроенного как будто без рамок ( внутрення равна ширине)
+            // widthShow={width - sortedVertical[index].x - FRAME_SIZESHOW}
 
-              change={false}
             />
 
           )
@@ -414,10 +429,10 @@ function Metrics(props) {
           <VerticalMetric
             x={0}
             y={item.y + FRAME_SIZE}
+            itemSelect={item}
             // 19.2(19,2*5 = 96 ) размер пола , а 14,2 рамзер пола визуально
             height={height - item.y - (downVisible ? FRAME_SIZE * 2 + 14.2 : FRAME_SIZE)}
             heightShow={height - item.y - (downVisible ? FRAME_SIZESHOW + 19.2 : FRAME_SIZESHOW)}
-            change={false}
             lineSize={-150}
             type={'down'}
           />
@@ -469,7 +484,7 @@ function Metrics(props) {
               y={item.y + FRAME_SIZE}
               height={height - item.y - (downVisible ? FRAME_SIZE * 2 + 14.2 : FRAME_SIZE)}
               heightShow={height - item.y - (downVisible ? FRAME_SIZESHOW + 19.2 : FRAME_SIZESHOW)}
-              change={false}
+              itemSelect={item}
               lineSize={-150}
               type={'down'}
             />
@@ -485,7 +500,7 @@ function Metrics(props) {
     // creataeRightArrow()
 
 
-    setHorizontalComponents(testArr)
+    setHorizontalComponents(horizntalArr)
 
     setVerticalComponents(verticalArr)
   }

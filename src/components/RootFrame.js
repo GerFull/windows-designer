@@ -60,8 +60,11 @@ import UrlImage from "./Figures/UrlImage";
 
 
 
-// при изменении размера ящики, ящик заходит на другой,пока хз что делать
 
+// мин ширина 1500
+// макс ширина 5000
+// мин высота 1000
+// макс высота 3500
 
 
 
@@ -91,7 +94,7 @@ const colors = [
 
 
 function RootFrame() {
-  const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
+  const { maxHeight, minHeight, maxWidth, minWidth, widthCloset, heightCloset, depthCloset, widthLeftWall, widthRightWall, maxDepth, minDepth } = useSelector(store => store.globalVariable)
   const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements,
     intersection, countBox, countHanger, countBarbel, selectedTextura,
     downVisible, upVisible, mainVisible } = useSelector(store => store.mainRectangles)
@@ -480,7 +483,6 @@ function RootFrame() {
 
     function removeInput(e) {
 
-      console.log(e.target)
 
       if (e.target === wrap) {
 
@@ -522,9 +524,9 @@ function RootFrame() {
       //   setWidthClosetChange((lastFrame + 50) * 5)
       //   setWidthCanvas(widthCanvas + ((lastFrame + 50) - widthCloset))
       // } else {
-        dispatch(changeWidth(minWidth / 5))
-        setWidthClosetChange(minWidth)
-        setWidthCanvas(widthCanvas + (minWidth / 5 - widthCloset))
+      dispatch(changeWidth(minWidth / 5))
+      setWidthClosetChange(minWidth)
+      setWidthCanvas(widthCanvas + (minWidth / 5 - widthCloset))
 
       // }
 
@@ -603,7 +605,23 @@ function RootFrame() {
   }
 
   const changeSizeDepth = () => {
-    dispatch(changeDepth(depthClosetChange / 5))
+
+    if (depthClosetChange > maxDepth) {
+      dispatch(changeDepth(maxDepth / 5))
+      setDepthClosetChange(maxDepth)
+
+    } else if (depthClosetChange < minDepth) {
+      dispatch(changeDepth(minDepth / 5))
+      setDepthClosetChange(minDepth )
+
+    } else {
+
+      dispatch(changeDepth(depthClosetChange / 5))
+      setDepthClosetChange(depthClosetChange)
+    }
+
+
+
   }
 
 
@@ -628,7 +646,6 @@ function RootFrame() {
   //   dispatch(replaceWidthRight(widthRightWallChange / 5))
   // }
 
-    console.log(MainWall)
 
   const changeColor = (value, item) => {
 
@@ -642,7 +659,7 @@ function RootFrame() {
 
       const mainColor = colors[value].mainColor
 
-      dispatch(changeColorMain({ mainColor: mainColor, texture: colors[value], LeftInside, RightInside, DownVisable, UpVisable,MainWall }))
+      dispatch(changeColorMain({ mainColor: mainColor, texture: colors[value], LeftInside, RightInside, DownVisable, UpVisable, MainWall }))
       // dispatch(changeColorLeft({ mainColor: mainColor }))
       // dispatch(changeColorRight({ mainColor: mainColor }))
 
