@@ -207,12 +207,12 @@ function PdfFile(props) {
 
 
                         <View>
-                           <View style={styles.textBox}>
+                           {/* <View style={styles.textBox}>
                               <Text style={styles.subtitle}>
                                  Название системы:
                               </Text>
                               <Text style={styles.title}></Text>
-                           </View>
+                           </View> */}
 
                            <View style={styles.textBox}>
                               <Text style={styles.subtitle}>

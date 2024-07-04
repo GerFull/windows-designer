@@ -46,9 +46,6 @@ function TexturePage() {
       });
    }
 
-
-
-
    const fetchData = async () => {
       const responce = await axios.get(`http://127.0.0.1:8000/api/Textures/${id}`);
       // const json = await data.json();
@@ -57,7 +54,6 @@ function TexturePage() {
       setImgSrc(responce.data.img)
       setCostTexture(responce.data.cost)
    }
-
 
    useEffect(() => {
       fetchData()
@@ -103,48 +99,45 @@ function TexturePage() {
 
 
    return (
-      <div>
-         <div className={style.btn__container}>
-            <button className={style.btn__item} onClick={() => navigate(-1)}>back</button>
-            <button className={style.btn__item} onClick={() => setTypePage(1)}>Изменить</button>
-            <button className={style.btn__item} onClick={() => setTypePage(0)}>Просмотр</button>
-            <button className={style.btn__item} onClick={deleteTexture}>Удалить</button>
+
+
+      <div className={style.adminPage} id='1'>
+         <div className={style.container}>
+            <button className={style.adminPage__btnBack} onClick={() => navigate(-1)}><img src="../images/arrowBack.png" /></button>
          </div>
-
-         {
-            typePage == 0 &&
-            <div>
-               <p className={style.title}>{nameTexture}</p>
-               <p className={style.title}>{costTexture} rub</p>
-               <img className={style.container_inputs_img} src={imgsrc} />
-
+         <div className={style.menu} style={{ backgroundColor: '#d9d9d9' }}>
+            <div className={style.btn__container}>
+               <button className={style.btn__item} onClick={() => setTypePage(1)}><p>Изменить</p></button>
+               <button className={style.btn__item} onClick={() => setTypePage(0)}><p>Просмотр</p></button>
+               <button className={style.btn__item} onClick={deleteTexture}><p>Удалить</p></button>
             </div>
+            {
+               typePage == 0 &&
+               <div className={style.adminPage__container}>
+                  <p className={style.title}>{nameTexture}</p>
+                  <p className={style.title}>{costTexture} rub</p>
+                  <img className={style.container_inputs_img} src={imgsrc} />
 
-         }
-
-         {
-
-            typePage == 1 &&
-
-            <div className={style.changeContainer}>
-               <input type="file" onChange={handleOnChange} />
-               <div>
-                  <p className={style.title}>Название текстуры</p>
-                  <input className={style.input__text} value={nameTexture} onChange={e => setNameTexture(e.target.value)} type='text' />
                </div>
-               <div>
-                  <p className={style.title}>Цена</p>
-                  <input className={style.input__text} value={costTexture} onChange={e => setCostTexture(e.target.value)} type='number' />
+            }
+            {
+               typePage == 1 &&
+               <div className={style.changeContainer}>
+                  <input type="file" onChange={handleOnChange} />
+                  <div>
+                     <p className={style.title}>Название текстуры</p>
+                     <input className={style.input__text} value={nameTexture} onChange={e => setNameTexture(e.target.value)} type='text' />
+                  </div>
+                  <div>
+                     <p className={style.title}>Цена</p>
+                     <input className={style.input__text} value={costTexture} onChange={e => setCostTexture(e.target.value)} type='number' />
+                  </div>
+                  <img className={style.container_inputs_img} src={imgsrc} />
+                  <button className={style.btn__item} onClick={handleSubmit} >Изменить</button>
+
                </div>
-               <img className={style.container_inputs_img} src={imgsrc} />
-               <button className={style.btn__item} onClick={handleSubmit} >Изменить</button>
-
-            </div>
-         }
-
-
-
-
+            }
+         </div>
       </div>
    )
 }

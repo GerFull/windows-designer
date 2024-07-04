@@ -1,5 +1,5 @@
-import { configureStore, createSlice, } from '@reduxjs/toolkit';
-import { action } from 'mobx';
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+
 
 
 const FRAME_SIZE = 5;
@@ -7,6 +7,8 @@ const FRAME_SIZE = 5;
 function id() {
    return Math.round(Math.random() * 10000);
 }
+
+
 
 
 const initialState = {
@@ -55,6 +57,7 @@ const DoorPageslice = createSlice({
                   // width: (widthCloset / countDoors) - 10,
                   width: (widthCloset / countDoors) - (state.styleFrame ? 10 : 5),
                   // height: heightCloset - 10,
+                  cost:150,
                   height: heightCloset - (state.styleFrame ? 10 : 5),
                   color: state.colorMain,
                   opacity: 1,
@@ -454,7 +457,7 @@ const DoorPageslice = createSlice({
       },
       changeColorRect(state, action) {
 
-         const { color, id } = action.payload
+         const { color, id ,cost} = action.payload
 
          if (color.includes('Images')) {
             state.doorRectangles.map(item => {
@@ -462,6 +465,7 @@ const DoorPageslice = createSlice({
                if (item.id === id) {
                   item.texture = `http://127.0.0.1:8000/${color}`
                   item.color = null
+                  item.cost=cost
                   item.opacity = 1
                   return item
                } else return item
@@ -474,6 +478,7 @@ const DoorPageslice = createSlice({
                if (item.id === id) {
                   item.texture = color
                   item.color = null
+                  item.cost=cost
                   item.opacity = 1
                   return item
                } else return item
@@ -501,7 +506,7 @@ const DoorPageslice = createSlice({
 
       }
    },
-
+  
 });
 
 

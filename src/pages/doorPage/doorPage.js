@@ -65,6 +65,7 @@ function DoorPage() {
    const navigate = useNavigate()
 
    const [widthCanvas, setWidthCanvas] = useState(widthCloset + widthRightWall + 300)
+   const [heightCanvas, setHeightCanvas] = useState(heightCloset + 100)
    const [color, setColor] = useState(null)
    const [colorValue, setColorValue] = useState(3)
    const [countDoors, setCountDoors] = useState(3)
@@ -85,7 +86,7 @@ function DoorPage() {
    const [systemDoors, setSystemDoors] = useState(false)
 
 
-
+   
 
    const fetchData = async () => {
       await axios.get('http://127.0.0.1:8000/api/Textures/').then(res => setTextures(res.data)).catch(err => console.log(err))
@@ -118,8 +119,35 @@ function DoorPage() {
       setCountDoors(NumberOfDoors)
    }, [])
 
-   // console.log(doors)
+   const changeCountDoors = (value) => {
+      setCountDoors(value)
+      dispatch(createDoors({ countDoors: value, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+   }
 
+   const changeColor = (value) => {
+
+      const mainColor = colorsFrame[value].mainColor
+      dispatch(changeColorStroke({ mainColor: mainColor, name: colorsFrame[value].name }))
+
+      setColorValue(value)
+   }
+
+   const changeStyleFrame = (value) => {
+      dispatch(changeThicknessFrame({ value }))
+      dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
+   }
+
+   const changeTextureDoor = (color, cost) => {
+
+      if (selectedDoor !== null) {
+         dispatch(changeColorRect({ color: color, id: selectedDoor, cost: cost }))
+      }
+
+   }
+
+   const selectDoor = (props) => {
+      setSelectedDoor(props?.attrs.id)
+   }
 
    // useEffect(() => {
 
@@ -164,13 +192,6 @@ function DoorPage() {
 
    }
 
-
-   const changeCountDoors = (value) => {
-      setCountDoors(value)
-      dispatch(createDoors({ countDoors: value, widthCloset: widthCloset, heightCloset, widthLeftWall }))
-   }
-
-
    const dragover = (e) => {
 
 
@@ -206,7 +227,6 @@ function DoorPage() {
 
    }
 
-
    const onDragEndMain = (x, y, id, derection) => {
 
       setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
@@ -226,7 +246,6 @@ function DoorPage() {
 
    }
 
-
    function clickCheck(props) {
 
       if (props.attrs.derection === 2 && props.attrs.width < widthCloset / countDoors - 10) {
@@ -239,7 +258,6 @@ function DoorPage() {
 
 
    }
-
 
    function createInput(pos, value, item) {
 
@@ -296,20 +314,6 @@ function DoorPage() {
 
    }
 
-
-   const changeColor = (value) => {
-
-      if (value.includes('Images')) {
-
-      } else {
-         const mainColor = colorsFrame[value].mainColor
-         dispatch(changeColorStroke({ mainColor: mainColor, name: colorsFrame[value].name }))
-      }
-
-      setColorValue(value)
-   }
-
-
    const onDragStartFrame = (item) => {
 
       if (item.derection === 1) {
@@ -328,26 +332,6 @@ function DoorPage() {
 
    }
 
-   const changeStyleFrame = (value) => {
-      dispatch(changeThicknessFrame({ value }))
-      dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
-   }
-
-   const selectDoor = (props) => {
-      setSelectedDoor(props?.attrs.id)
-   }
-
-
-   const changeTextureDoor = (color) => {
-
-
-      if (selectedDoor !== null) {
-         dispatch(changeColorRect({ color: color, id: selectedDoor }))
-      }
-
-   }
-
-
    const changeStyleCursor = (type) => {
 
       if (type === 'enter') {
@@ -355,8 +339,6 @@ function DoorPage() {
       } else stageRef.current.container().style.cursor = 'default';
 
    }
-
-
 
    const onBlurDoor = (e) => {
       if (e.target.localName !== 'canvas') {
@@ -368,9 +350,9 @@ function DoorPage() {
    }
 
    const onBlurCanvasDoor = (e) => {
-     if (e.id == 'container') {
-      setSelectedDoor(null)
-   }
+      if (e.id == 'container') {
+         setSelectedDoor(null)
+      }
 
 
    }
@@ -383,13 +365,12 @@ function DoorPage() {
             <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png" /></div>
             <Stage
                width={widthCanvas}
-               height={700}
+               height={heightCanvas}
                ref={stageRef}
                id="container"
                style={{ position: 'relative' }}
-            onClick={e=>onBlurCanvasDoor(e.target.attrs)}
+               onClick={e => onBlurCanvasDoor(e.target.attrs)}
             >
-
                <Layer x={100} y={50} ref={LayerRef}
                   listening={false}
                >
@@ -506,7 +487,6 @@ function DoorPage() {
 
 
                   </Group>
-
                   <Group visible={LeftWallVisible}>
 
                      <Rect
@@ -557,7 +537,6 @@ function DoorPage() {
                      }
 
                   </Group>
-
                   <Group
                   >
                      {
@@ -614,8 +593,6 @@ function DoorPage() {
                      }
 
                   </Group>
-
-
                </Layer>
                <Layer x={100} y={50}>
                   {
@@ -696,22 +673,16 @@ function DoorPage() {
 
                </Layer>
             </Stage>
-
-
          </div>
-
          <div className={style.menu} style={{ backgroundColor: !showMenu ? 'white' : '#d9d9d9' }}>
             <div>
                {
-
                   showMenu && <div className={style.menu__header}>
                      <p className={style.menu__title}>Шкаф</p>
                      <p className={style.menu__subtitle}>Стандратное описание</p>
                   </div>
                }
-
                {
-
                   showMenu &&
                   <div className={style.menu__container}>
                      <div onClick={() => {
@@ -725,27 +696,19 @@ function DoorPage() {
 
                   </div>
                }</div>
-
-
             {
                showDoors &&
                <div className={style.menu__inputs}>
                   <div>
                      <div className={style.menu__inputSize}>
-
                         <p className={style.menu__inputSize_title}>Двери</p>
-
                         <div className={style.menu__inputSize_container}>
-
                            <div className={style.menu__inputSize_item}>
                               <p>Количество дверей</p>
                               <input className={style.input__size} step={1} min={2} max={10} value={countDoors} onChange={(e) => changeCountDoors(Number(e.target.value))} type="number" />
-
                            </div>
-
                         </div>
                         <div>
-
                            <label className={style.checkbox}>
                               <input checked={!styleFrame} onChange={e => changeStyleFrame(!e.target.checked)} type="checkbox" />
                               <div className={style.checkbox__checkmark}></div>
@@ -757,41 +720,27 @@ function DoorPage() {
                               <div className={style.checkbox__body}> Система дверей Style</div>
                            </label>
                         </div>
-
                      </div>
-
                      <p className={style.menu__colorsTitle}>Профиль</p>
-
                      <div className={style.menu__colorsContainer}>
                         {
                            colorsFrame.map((item, index) => <div onClick={() => changeColor(String(index))} style={{ backgroundColor: item.mainColor, border: index == colorValue ? '2px solid black' : null }} className={style.menu__colorsContainer_item} ></div>)
                         }
-
                      </div>
-
-
-
                   </div>
-
-
-
                   <div className={style.menu__btnContainer}>
                      <div className={style.menu__backBtn} onClick={() => {
                         setShowMenu(true)
                         setShowDoors(false)
                      }}><img src="./images/cross.png" /><p>Свернуть</p></div>
                   </div>
-
                </div>
             }
-
             {
                showPartition &&
                <div className={style.menu__inputs}>
-
                   <div>
                      {/* <div className={style.menu__inputSize}>
-
                         <p className={style.menu__inputSize_title}>Перегородки</p>
                         <div className={style.menu__partitionContainer}>
                            <div className={style.menu__partitionItem} >
@@ -804,37 +753,28 @@ function DoorPage() {
                               <p>Горизонталная перегородка</p>
                            </div>
                         </div>
-
-
                      </div> */}
                      <div >
                         <p className={style.menu__colorsTitle}>Матераил дверей</p>
                         <div className={style.menu__colors}>
-
                            {/* <div draggable={true} onDragStart={() => setColor('white')}>
                               <div className={style.menu__colors_img} style={{ backgroundColor: 'white' }} />
                            </div> */}
-                           <div className={style.menu__colors_item} onClick={() => changeTextureDoor('./images/miror.jpg')}>
+                           <div className={style.menu__colors_item} onClick={() => changeTextureDoor('./images/miror.jpg', 100)}>
                               <img className={style.menu__colors_img} src={`./images/miror.jpg`} />
                               <p className={style.menu__colors_title}>Зеркало</p>
                            </div>
-
                            {
                               textures.map(item =>
-                                 <div className={style.menu__colors_item} onClick={() => changeTextureDoor(item.img)}>
+                                 <div className={style.menu__colors_item} onClick={() => changeTextureDoor(item.img, item.cost)}>
                                     <img className={style.menu__colors_img} src={`http://127.0.0.1:8000/${item.img}`} />
                                     <p className={style.menu__colors_title} >{item.title}</p>
                                  </div>
                               )
                            }
-
                         </div>
-
-
-
                      </div>
                   </div>
-
                   <div className={style.menu__btnContainer}>
                      <div className={style.menu__backBtn} onClick={() => {
                         setShowMenu(true)
@@ -843,14 +783,12 @@ function DoorPage() {
                   </div>
                </div>
             }
-
             {showMenu &&
                <div className={style.menu__btnContainer}>
                   <div className={style.menu__backBtn} onClick={() => navigate('/cost')}><p>Далее</p></div>
                </div>
             }
          </div>
-
       </div>
    );
 }

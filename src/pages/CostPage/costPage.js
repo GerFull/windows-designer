@@ -3,16 +3,14 @@ import { Stage, Layer, Group, Rect } from "react-konva";
 import style from './costPage.module.scss'
 import { useDispatch, useSelector } from 'react-redux';
 import Poligon from "../../components/Figures/Poligon";
-import ElipseTexture from "../../components/Figures/Elipse";
 import Rectangle from "../../components/Figures/Rectangle";
 import { useNavigate } from "react-router-dom";
 import MetricsDoors from "../../components/MetricsDoors";
 import UrlImage from "../../components/Figures/UrlImage";
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer'
+import { PDFDownloadLink } from '@react-pdf/renderer'
 import html2canvas from 'html2canvas';
 import PdfFile from "../PDFFile/pdfFile";
 import Metrics from "../../components/Metrics";
-import { newImage } from "../../store/slice/mainRectangles";
 
 
 
@@ -20,8 +18,8 @@ function CostPage() {
 
 
 
-   const { widthCloset, heightCloset, widthLeftWall, widthRightWall, depthCloset } = useSelector(store => store.globalVariable)
-   const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura, mainVisible, countHanger, countBarbel } = useSelector(store => store.mainRectangles)
+   const { widthCloset, heightCloset, widthLeftWall, widthRightWall, depthCloset, priceBarbel, priceBox, priceHanger, priceMechanismDoor, coeficentMarkUo, coeficentWaste } = useSelector(store => store.globalVariable)
+   const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura, mainVisible, upVisible, downVisible, countHanger, countBarbel } = useSelector(store => store.mainRectangles)
    const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
    const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles, NumberOfDoors, styleFrame, nameColorFrame } = useSelector(store => store.doors)
@@ -39,7 +37,6 @@ function CostPage() {
    const [widthCanvas, setWidthCanvas] = useState(widthCloset + widthRightWall + 150)
    const [widthCanvasInside, setWidthCanvasInside] = useState(widthCloset + widthRightWall + 200)
 
-
    const LayerRefMain = useRef(null)
    const LayerRef = useRef(null)
    const LayerRefMetrics = useRef(null)
@@ -50,15 +47,10 @@ function CostPage() {
    const [box, setBox] = useState(false)
 
 
-
-
    useEffect(() => {
-      console.log('asd')
       setImage((pref) => canvasRef.current.toDataURL())
       setImageInside((pref) => canvasInsideRef.current.toDataURL())
-
    },)
-
 
 
 
@@ -66,6 +58,88 @@ function CostPage() {
    const changeTag = (number) => {
 
       setTag(number)
+   }
+
+
+   const calculateDoorsCost = () => {
+      // Рассчитываем площадь одной двери
+      const doorArea = (((widthCloset * 5) * (heightCloset * 5)) / NumberOfDoors) / 1000000;
+
+      // Переменная для хранения общей стоимости всех дверей
+      let totalCost = 0;
+
+      // Проходим по каждому объекту двери и рассчитываем стоимость
+      doorRectangles.forEach(door => {
+         totalCost += door.cost * doorArea;
+      });
+
+      return totalCost
+   }
+
+   const countTypeDoors = () => {
+      let mir = 0
+      let glass = 0
+      let ldsp = 0
+
+      doorRectangles.forEach(element => {
+
+         if (element.color === 'white') glass += 1
+         if (element.texture?.includes('images')) mir += 1
+         if (element.texture?.includes('Images')) ldsp += 1
+      });
+
+      return `Зеркало ${mir} стекло ${glass} ЛДСП ${ldsp}`
+
+   }
+
+   const sumSquare = () => {
+
+      const summVerticatal = Rectangels.filter(item => item.derection == 1 && item.type == 'frame').reduce(
+         (accumulator, item) => accumulator + ((item.height * 5) * ((depthCloset * 5) - 100)),
+         0,
+      );
+      const summHorizontal = Rectangels.filter(item => item.derection == 2 && item.type == 'frame').reduce(
+         (accumulator, item) => accumulator + ((item.width * 5) * ((depthCloset * 5) - 100)),
+         0,
+      )
+
+      const SquareElements = (summVerticatal + summHorizontal) / 1000000
+      const SquareOutside =
+         ((upVisible ? ((widthCloset * 5) * (depthCloset * 5)) : 0) +
+            (downVisible ? ((widthCloset * 5) * (depthCloset * 5)) : 0) +
+            (!LeftWallVisible ? ((heightCloset * 5) * (depthCloset * 5)) : 0) +
+            (!RightWallVisible ? ((heightCloset * 5) * (depthCloset * 5)) : 0)
+
+         ) / 1000000
+
+      // ((площадь деталей + площадь внешних элементов) * цена материала) * коофициент наценки (из админки меняется) * коофицент тех.отхода (из админки меняется) 
+      // +( ((площадть двери) * цену материала) * кол-во дверей) + (кол-во дверей * цену механизма двери) 
+      //  +(кол-во ящиков * цена ящика) + (кол-во штанг * цену штанги) + (кол-во вешалки * цену вешалки)
+      //
+
+      const newSum = ((SquareOutside + SquareElements) * selectedTextura.cost) * coeficentMarkUo * coeficentWaste + calculateDoorsCost() +
+         (NumberOfDoors * priceMechanismDoor) + (countBox * priceBox) + (countBarbel * priceBarbel) + (countHanger * priceHanger)
+
+      return newSum
+   }
+
+   const currentDay = () => {
+
+      const currentDate = new Date();
+      let day = currentDate.getDate();
+      let month = currentDate.getMonth() + 1; // Месяцы начинаются с 0, поэтому добавляем 1
+      const year = currentDate.getFullYear();
+
+      // Преобразуем числовые значения в строки и добавляем ведущий ноль, если число меньше 10
+      if (day < 10) {
+         day = '0' + day;
+      }
+      if (month < 10) {
+         month = '0' + month;
+      }
+
+      return day + '.' + month + '.' + year;
+
    }
 
 
@@ -95,76 +169,11 @@ function CostPage() {
       }
    };
 
-
-   const countTYpeDoors = () => {
-      let mir = 0
-      let glass = 0
-      let ldsp = 0
-
-      doorRectangles.forEach(element => {
-
-         if (element.color === 'white') glass += 1
-         if (element.texture?.includes('images')) mir += 1
-         if (element.texture?.includes('Images')) ldsp += 1
-      });
-
-      return `Зеркало ${mir} стекло ${glass} ЛДСП ${ldsp}`
-
-   }
-
-   const sumSquare = () => {
-
-      const summVerticatal = Rectangels.filter(item => item.derection == 1 && item.type == 'frame').reduce(
-         (accumulator, item) => accumulator + ((item.height * 5) * ((depthCloset * 5) - 100)),
-         0,
-      );
-      const summVerticatalAr = Rectangels.filter(item => item.derection == 1 && item.type == 'frame')
-
-      const summHorizontalAr = Rectangels.filter(item => item.derection == 2 && item.type == 'frame')
-
-      const summHorizontal = Rectangels.filter(item => item.derection == 2 && item.type == 'frame').reduce(
-         (accumulator, item) => accumulator + ((item.width * 5) * ((depthCloset * 5) - 100)),
-         0,
-      )
-
-
-      // P=S/0.8*1200+2500
-
-
-
-      const SquareElements = (summVerticatal + summHorizontal) / 1000000
-
-      // 1200 разбить на переменные
-
-      const cost = ((SquareElements / 0.8 * (700 + selectedTextura.cost)) + 2500) + (countBox * 1200)
-
-      return cost
-   }
-
-   const currentDay = () => {
-
-      const currentDate = new Date();
-      let day = currentDate.getDate();
-      let month = currentDate.getMonth() + 1; // Месяцы начинаются с 0, поэтому добавляем 1
-      const year = currentDate.getFullYear();
-
-      // Преобразуем числовые значения в строки и добавляем ведущий ноль, если число меньше 10
-      if (day < 10) {
-         day = '0' + day;
-      }
-      if (month < 10) {
-         month = '0' + month;
-      }
-
-      return day + '.' + month + '.' + year;
-
-   }
-
    const InfoProduct = {
-      size: `${widthCloset * 5}x${depthCloset * 5} x ${heightCloset * 5}`,
+      size: `${widthCloset * 5}x${depthCloset * 5}x${heightCloset * 5}`,
       cost: Math.round(sumSquare()),
       material: selectedTextura.title,
-      doors: countTYpeDoors(),
+      doors: countTypeDoors(),
       system: styleFrame,
       colorFrame: nameColorFrame,
       mainVisible: mainVisible,
@@ -172,7 +181,7 @@ function CostPage() {
       countBarbel: countBarbel,
       countHanger: countHanger,
       date: currentDay(),
-      box:box
+      box: box
    }
 
 
@@ -988,7 +997,7 @@ function CostPage() {
                   <label className={style.checkbox}>
                      <input checked={box} onChange={e => setBox(e.target.checked)} type="checkbox" />
                      <div className={style.checkbox__checkmark}></div>
-                     <div className={style.checkbox__body}>Ящик для зеркальных\стекльянных дверей</div>
+                     <div className={style.checkbox__body}>Ящик для зеркальных\стеклянных дверей</div>
                   </label>
 
                   <div className={style.menu__costContainer}>
