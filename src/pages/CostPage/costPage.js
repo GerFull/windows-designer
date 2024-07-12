@@ -20,8 +20,8 @@ function CostPage() {
 
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall, depthCloset, priceBarbel, priceBox, priceHanger, priceMechanismDoor, coeficentMarkUo, coeficentWaste } = useSelector(store => store.globalVariable)
    const { Rectangels, mainBackRectangles, elements, countBox, selectedTextura, mainVisible, upVisible, downVisible, countHanger, countBarbel } = useSelector(store => store.mainRectangles)
-   const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
-   const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
+   const { leftRectangels, LeftWallVisible } = useSelector(store => store.leftRectangels)
+   const { RightRectangels, RightWallVisible } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles, NumberOfDoors, styleFrame, nameColorFrame } = useSelector(store => store.doors)
 
 
@@ -46,21 +46,14 @@ function CostPage() {
    const [tag, setTag] = useState(0)
    const [box, setBox] = useState(false)
 
-
+   // создани картинок из канвас
    useEffect(() => {
+
       setImage((pref) => canvasRef.current.toDataURL())
       setImageInside((pref) => canvasInsideRef.current.toDataURL())
    },)
 
-
-
-
-   const changeTag = (number) => {
-
-      setTag(number)
-   }
-
-
+// подсчет стоимости дверей
    const calculateDoorsCost = () => {
       // Рассчитываем площадь одной двери
       const doorArea = (((widthCloset * 5) * (heightCloset * 5)) / NumberOfDoors) / 1000000;
@@ -75,7 +68,7 @@ function CostPage() {
 
       return totalCost
    }
-
+   // количество типов дверей
    const countTypeDoors = () => {
       let mir = 0
       let glass = 0
@@ -91,9 +84,11 @@ function CostPage() {
       return `Зеркало ${mir} стекло ${glass} ЛДСП ${ldsp}`
 
    }
-
+      // итоговая стоимость
    const sumSquare = () => {
 
+      // деление на 1000000 из-за того что все в миллиметрах 
+      // площадь перегородок
       const summVerticatal = Rectangels.filter(item => item.derection == 1 && item.type == 'frame').reduce(
          (accumulator, item) => accumulator + ((item.height * 5) * ((depthCloset * 5) - 100)),
          0,
@@ -102,8 +97,9 @@ function CostPage() {
          (accumulator, item) => accumulator + ((item.width * 5) * ((depthCloset * 5) - 100)),
          0,
       )
-
       const SquareElements = (summVerticatal + summHorizontal) / 1000000
+      // площадь внешних элементов
+
       const SquareOutside =
          ((upVisible ? ((widthCloset * 5) * (depthCloset * 5)) : 0) +
             (downVisible ? ((widthCloset * 5) * (depthCloset * 5)) : 0) +
@@ -593,8 +589,8 @@ function CostPage() {
          <div className={style.doorsPage__container}>
             <div className={style.doorsPage__backbtn} onClick={() => navigate(-1)}><img src="./images/arrowBack.png" /></div>
             <div className={style.doorsPage__tagsContainer}>
-               <div onClick={() => changeTag(0)} className={tag == 0 ? style.doorsPage__tagItemActive : style.doorsPage__tagItem} >Наполнение</div>
-               <div onClick={() => changeTag(1)} className={tag == 1 ? style.doorsPage__tagItemActive : style.doorsPage__tagItem}>Двери</div>
+               <div onClick={() => setTag(0)} className={tag == 0 ? style.doorsPage__tagItemActive : style.doorsPage__tagItem} >Наполнение</div>
+               <div onClick={() => setTag(1)} className={tag == 1 ? style.doorsPage__tagItemActive : style.doorsPage__tagItem}>Двери</div>
             </div>
             <Stage
                width={widthCanvas}

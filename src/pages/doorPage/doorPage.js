@@ -3,16 +3,11 @@ import { Stage, Layer, Group, Rect } from "react-konva";
 import style from './doorPage.module.scss'
 import { useDispatch, useSelector } from 'react-redux';
 import Poligon from "../../components/Figures/Poligon";
-import ElipseTexture from "../../components/Figures/Elipse";
 import Rectangle from "../../components/Figures/Rectangle";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
-   createDoorsHorizontal, createDoorsVertical,
-   createDoors, DragStarDoorsVertical,
-   DragStarDoorsHorizontal, deleteDoorsRectangle,
-   onBlurInputDoorsVertical,
-   onBlurInputDoorsHorizontal,
+   createDoors, 
    changeColorStroke,
    changeColorRect,
    changeThicknessFrame
@@ -21,18 +16,7 @@ import MetricsDoors from "../../components/MetricsDoors";
 import UrlImage from "../../components/Figures/UrlImage";
 
 
-const FRAME_SIZE = 5;
 
-
-const colors = [
-   {
-      mainColor: 'white',
-   },
-   {
-      mainColor: './images/miror.jpg',
-   },
-
-]
 const colorsFrame = [{
    mainColor: '#8d8d8d',
    name: 'Серый'
@@ -50,9 +34,9 @@ const colorsFrame = [{
 
 function DoorPage() {
    const { widthCloset, heightCloset, widthLeftWall, widthRightWall } = useSelector(store => store.globalVariable)
-   const { Rectangels, mainBackRectangles, verticalFrames, horizontalFrames, elements } = useSelector(store => store.mainRectangles)
-   const { leftRectangels, leftBackRectangles, LeftWallVisible } = useSelector(store => store.leftRectangels)
-   const { RightRectangels, rightBackRectangles, RightWallVisible } = useSelector(store => store.rightRectangels)
+   const { Rectangels, mainBackRectangles, elements } = useSelector(store => store.mainRectangles)
+   const { leftRectangels, LeftWallVisible } = useSelector(store => store.leftRectangels)
+   const { RightRectangels, RightWallVisible } = useSelector(store => store.rightRectangels)
    const { doors, doorRectangles, NumberOfDoors, styleFrame } = useSelector(store => store.doors)
 
    const state = useSelector(store => store)
@@ -86,7 +70,7 @@ function DoorPage() {
    const [systemDoors, setSystemDoors] = useState(false)
 
 
-   
+
 
    const fetchData = async () => {
       await axios.get('http://127.0.0.1:8000/api/Textures/').then(res => setTextures(res.data)).catch(err => console.log(err))
@@ -119,11 +103,14 @@ function DoorPage() {
       setCountDoors(NumberOfDoors)
    }, [])
 
+
+   // смена количества дверей и их перересовка
    const changeCountDoors = (value) => {
       setCountDoors(value)
       dispatch(createDoors({ countDoors: value, widthCloset: widthCloset, heightCloset, widthLeftWall }))
    }
 
+   // смена цвета рамки
    const changeColor = (value) => {
 
       const mainColor = colorsFrame[value].mainColor
@@ -132,11 +119,13 @@ function DoorPage() {
       setColorValue(value)
    }
 
+   // смена стиля рамки(толще,тоньще)
    const changeStyleFrame = (value) => {
       dispatch(changeThicknessFrame({ value }))
       dispatch(createDoors({ countDoors: NumberOfDoors, widthCloset: widthCloset, heightCloset, widthLeftWall }))
    }
 
+   // смена текстуры двери
    const changeTextureDoor = (color, cost) => {
 
       if (selectedDoor !== null) {
@@ -145,193 +134,11 @@ function DoorPage() {
 
    }
 
+   // обоботчик для выбора двери
    const selectDoor = (props) => {
       setSelectedDoor(props?.attrs.id)
    }
-
-   // useEffect(() => {
-
-
-
-   //    const con = stageRef.current.container()
-   //    con.addEventListener('dragover', dragover)
-
-   //    con.addEventListener('drop', drop)
-
-   //    return () => {
-   //       con.removeEventListener('dragover', dragover)
-   //       con.removeEventListener('drop', drop)
-   //    }
-
-   // }, [doorRectangles, derection, selectedRectId, doors])
-
-   const drop = (e) => {
-
-      e.preventDefault();
-
-
-      if (selectedRectId !== null) {
-         setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
-         if (derection !== null) {
-            if (doorRectangles.includes(selectedRectId)) {
-               if (derection === '1') {
-                  dispatch(createDoorsVertical({ xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall: widthLeftWall }))
-               }
-               if (derection === '2') {
-                  dispatch(createDoorsHorizontal({ xk: e.layerX - 100, yk: e.layerY - 50 }))
-               }
-            }
-            setDerection(null)
-         }
-         // else if (color !== null) {
-         //    dispatch(changeColorRect({ color: color, id: selectedRectId.id }))
-         // }
-      }
-
-      setSelectedRectId(null)
-
-   }
-
-   const dragover = (e) => {
-
-
-
-      e.preventDefault();
-      const x = e.layerX - 100
-      const y = e.layerY - 50
-
-
-
-      const item = doorRectangles.filter(item => (
-         (x > item.x && x < (item.x + item.width)) &&
-         (y > item.y && y < (item.y + item.height))
-      )
-      )[0]
-
-      if (item !== undefined) {
-
-         setSelectedRectId(item)
-
-         switch (derection) {
-            case '1':
-               setShowObject({ ...showObject, width: FRAME_SIZE, height: item.height, x: x, y: item.y })
-               break;
-            case '2':
-               setShowObject({ ...showObject, width: item.width, height: FRAME_SIZE, x: item.x, y: y })
-
-         }
-      } else setSelectedRectId(null)
-
-
-
-
-   }
-
-   const onDragEndMain = (x, y, id, derection) => {
-
-      setShowObject({ fill: '#99ff99', opacity: 0.7, width: 0, height: 0, x: 0, y: 0 })
-
-      if ((x > 100 && x < 100 + widthCloset) && (y > 0 && y < y + heightCloset)) {
-
-         if (derection === 1) {
-            dispatch(createDoorsVertical({ xk: x, yk: y, idd: id, widthLeftWall: widthLeftWall }))
-         } else {
-            dispatch(createDoorsHorizontal({ xk: x, yk: y, idd: id }))
-         }
-
-      } else {
-         dispatch(deleteDoorsRectangle({ id: id }))
-      }
-
-
-   }
-
-   function clickCheck(props) {
-
-      if (props.attrs.derection === 2 && props.attrs.width < widthCloset / countDoors - 10) {
-         createInput(props.getAbsolutePosition(), props.attrs.width, props.attrs)
-
-      }
-      else if (props.attrs.derection === 1 && props.attrs.height < heightCloset - 10) {
-         createInput(props.getAbsolutePosition(), props.attrs.height, props.attrs)
-      }
-
-
-   }
-
-   function createInput(pos, value, item) {
-
-
-
-      const containerDiv = document.getElementById('container');
-
-
-      var wrap = document.createElement('div');
-      wrap.style.position = 'absolute';
-      wrap.style.top = 0;
-      wrap.style.left = 0;
-      wrap.style.width = '100%';
-      wrap.style.height = '100%';
-
-      containerDiv.appendChild(wrap)
-
-      const input = document.createElement('input');
-      input.type = 'number';
-
-      input.style.position = 'absolute';
-      input.style.top = pos.y + 3 + 'px';
-      input.style.left = pos.x + 'px';
-
-      input.style.height = 20 + 3 + 'px';
-      input.style.width = 100 + 3 + 'px';
-      input.value = (value + 2) * 5
-
-      if (item.derection === 2) {
-         input.onblur = (e) => dispatch(onBlurInputDoorsHorizontal({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, width: item.width }))
-      }
-      else {
-         input.onblur = (e) => dispatch(onBlurInputDoorsVertical({ value: e.currentTarget?.value / 5, containerDiv, wrap, itemSelect: item, height: item.height }))
-      }
-
-
-
-
-      wrap.appendChild(input);
-
-      function removeInput(e) {
-
-
-         if (e.target === wrap) {
-
-            wrap.parentNode.removeChild(wrap);
-            wrap.removeEventListener("click", removeInput);
-
-         }
-
-      }
-
-      wrap.addEventListener('click', removeInput, { once: true });
-
-   }
-
-   const onDragStartFrame = (item) => {
-
-      if (item.derection === 1) {
-         setDerection('1')
-         dispatch(DragStarDoorsVertical({ itemSelect: item }))
-      } else {
-         setDerection('2')
-         dispatch(DragStarDoorsHorizontal({ itemSelect: item }))
-      }
-
-
-   }
-
-   const changeSystem = (value) => {
-      setSystemDoors(value)
-
-   }
-
+   // смена стиля курсора чтоб пользователь понимать что можно нажать
    const changeStyleCursor = (type) => {
 
       if (type === 'enter') {
@@ -340,15 +147,14 @@ function DoorPage() {
 
    }
 
+   // возврат стиля курсора
    const onBlurDoor = (e) => {
       if (e.target.localName !== 'canvas') {
          setSelectedDoor(null)
       }
-
-
-
    }
 
+   // возврат стиля курсора
    const onBlurCanvasDoor = (e) => {
       if (e.id == 'container') {
          setSelectedDoor(null)
@@ -633,11 +439,8 @@ function DoorPage() {
                                  draggable={rect.draggable}
                                  height={rect.height}
                                  type={rect.type}
-                                 dragover={dragover}
                                  derection={rect.derection}
-                                 onDragStart={() => onDragStartFrame(rect)}
                                  texture={rect?.texture && rect?.texture}
-                                 onDragEnd={(e) => onDragEndMain(e.evt.layerX - 100, e.evt.layerY - 50, rect.id, rect.derection)}
                               />
 
                               {

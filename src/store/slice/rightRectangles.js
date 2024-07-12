@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk, } from '@reduxjs/toolkit';
 
 
 const FRAME_SIZE = 5;
-const colorMain = '#efcf9f'
 
 const widthCloset = 600
 const heightCloset = 400
@@ -385,7 +384,7 @@ const rightRectangelsSlice = createSlice({
          state.horizontalRightFrames = []
       },
       changeHorizontalRightFrames(state, action) {
-         console.log('right')
+
 
          const { value, valueInput, itemSelect, heightShow } = action.payload
 

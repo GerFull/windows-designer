@@ -4,7 +4,6 @@ import style from './homePage.module.scss'
 import { useDispatch, useSelector } from 'react-redux';
 import Metrics from "../../components/Metrics";
 import Poligon from "../../components/Figures/Poligon";
-// import ElipseTexture from "./Figures/Elipse";
 import Rectangle from "../../components/Figures/Rectangle";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -17,27 +16,22 @@ import {
   changeColorMain, changeVisionMainWall,
   changeTextureMain, changeSizeMainWall,
   createNewBurb,
-  createHanger, createSideHanger, DragStartHanger,
+  createHanger, DragStartHanger,
   deleteElement, createDrawer, onBlurInputDrawer,
   changeWallInside, changeVisibableUp,
   changeVisibableDown,
   changeSizeWidthElements, changeSizeFrame
 } from "../../store/slice/mainRectangles";
 import {
-  createHorizontalLeft, DragStarHorizontalLeft,
-  deleteItemLeft, changeSizeHeightLeft,
-  changeSizeLeftWall, changeColorLeft,
-  changeTextureLeft, leftVisibleWall
+  changeSizeHeightLeft,
+  leftVisibleWall
 } from "../../store/slice/leftRectangles";
 import {
-  createHorizontalRight, DragStarHorizontalRight,
-  deleteItemRight, changeSizeHeightRight,
-  changeSizeWallRight, changeSizeRightWall,
-  changeWidthRight, changeColorRight, changeTextureRight,
-  rightVisibleWall
-
+  changeSizeHeightRight,
+  rightVisibleWall,
+  changeSizeWallRight
 } from "../../store/slice/rightRectangles";
-import { changeWidth, changeHeight, replaceWidthRight, replaceWidthLeft, changeDepth } from "../../store/slice/globalVariable";
+import { changeWidth, changeHeight, changeDepth } from "../../store/slice/globalVariable";
 import UrlImage from "../../components/Figures/UrlImage";
 
 
@@ -49,13 +43,7 @@ import UrlImage from "../../components/Figures/UrlImage";
 // 1 пиксель 5мм
 
 
-// документация подписать за что отвечает каждый блок
-
-
-
-// не меняется размер вертикальных перегородок при включении отключении пола,потлок тоже.
-// нельзя создать текстуру без заполнения
-
+// закоменченные функции нужны для функционала полок слева и права
 
 const FRAME_SIZE = 5;
 
@@ -64,13 +52,13 @@ const colors = [
   {
     id: 'std',
     mainColor: '#efcf9f',
-    name: 'Стандартный',
+    title: 'Охрый',
     cost: 500
   },
   {
     id: 'wh',
     mainColor: 'white',
-    name: 'Белый',
+    title: 'Белый',
     cost: 500
   },
 ]
@@ -158,11 +146,6 @@ function HomePage() {
             createHanger({ xk: e.layerX - 100, yk: e.layerY - 50, widthLeftWall: widthLeftWall })
           )
         }
-        if (derection === '5') {
-          dispatch(
-            createSideHanger({ xk: e.layerX - 100, yk: e.layerY - 50, widthCloset: widthCloset })
-          )
-        }
         if (derection === '6') {
           dispatch(
             createDrawer({ xk: e.layerX - 100, yk: e.layerY - 50, widthCloset: widthCloset })
@@ -170,20 +153,20 @@ function HomePage() {
         }
       }
 
-      else if (leftRectangels.includes(selectedRectId) && LeftWall && derection === '2') {
+      // else if (leftRectangels.includes(selectedRectId) && LeftWall && derection === '2') {
 
-        dispatch(
-          createHorizontalLeft(
-            { xk: e.layerX - 100, yk: e.layerY - 50, }
-          )
-        )
-      } else if (RightRectangels.includes(selectedRectId) && RightWall && derection === '2') {
-        dispatch(
-          createHorizontalRight(
-            { xk: e.layerX - 100, yk: e.layerY - 50, }
-          )
-        )
-      }
+      //   dispatch(
+      //     createHorizontalLeft(
+      //       { xk: e.layerX - 100, yk: e.layerY - 50, }
+      //     )
+      //   )
+      // } else if (RightRectangels.includes(selectedRectId) && RightWall && derection === '2') {
+      //   dispatch(
+      //     createHorizontalRight(
+      //       { xk: e.layerX - 100, yk: e.layerY - 50, }
+      //     )
+      //   )
+      // }
       setSelectedRectId(null)
     }
   }
@@ -197,14 +180,16 @@ function HomePage() {
 
     let newArr = [...Rectangels]
 
-    if (LeftWall && RightWall) {
-      newArr = [...Rectangels, ...leftRectangels, ...RightRectangels]
-    } else if (RightWall) {
-      newArr = [...Rectangels, ...RightRectangels]
-    } else if (LeftWall) {
-      newArr = [...Rectangels, ...leftRectangels]
-    }
+    // if (LeftWall && RightWall) {
+    //   newArr = [...Rectangels, ...leftRectangels, ...RightRectangels]
+    // } else if (RightWall) {
+    //   newArr = [...Rectangels, ...RightRectangels]
+    // } else if (LeftWall) {
+    //   newArr = [...Rectangels, ...leftRectangels]
+    // }
 
+
+    // поиск в какой область ставить перегородку
     const item = newArr.filter(item => (
       (x > item.x && x < (item.x + item.width)) &&
       (y > item.y && y < (item.y + item.height)) && item?.type !== 'frame'
@@ -309,9 +294,6 @@ function HomePage() {
           break;
         case 'drawer':
           dispatch(createDrawer({ xk: x, yk: y, idd: id, heightDrawer: height }))
-          break;
-        case 'sidehanger':
-          dispatch(createSideHanger({ xk: x, yk: y, idd: id, widthCloset: widthCloset }))
           break;
       }
     } else {
@@ -531,7 +513,7 @@ function HomePage() {
 
     const lastFrame = copyHorizontalFrames.sort((itme1, item2) => itme1?.y > item2?.y ? -1 : 1)[0]?.y
 
-    dispatch(changeSizeHeightMain({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame }))
+    dispatch(changeSizeHeightMain({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame, downVisible }))
     dispatch(changeSizeHeightLeft({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame }))
     dispatch(changeSizeHeightRight({ heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame }))
 
@@ -596,9 +578,7 @@ function HomePage() {
 
 
   // const changeWidthLeftWall = () => {
-
   //   const changeValue = widthLeftWallChange / 5 - widthLeftWall
-
   //   dispatch(changeSizeLeftWall({ changeValue: changeValue }))
   //   dispatch(changeSizeMainWall({ changeValue: changeValue }))
   //   dispatch(changeSizeRightWall({ changeValue: changeValue }))
@@ -608,12 +588,11 @@ function HomePage() {
 
 
   // const changeWidthRightWall = () => {
-
   //   const changeValue = widthRightWallChange / 5 - widthRightWall
-
   //   dispatch(changeWidthRight({ changeValue: changeValue }))
   //   dispatch(replaceWidthRight(widthRightWallChange / 5))
   // }
+
 
   // функция для смены цвета, текстры шкафа
   const changeColor = (value, item) => {
@@ -642,6 +621,9 @@ function HomePage() {
   //   dispatch(rightVisibleWall({ widthRightWall: widthRightWall, widthLeftWall: widthLeftWall, heightCloset: heightCloset, widthCloset: widthCloset, value }))
   // }
 
+
+  // все функции ниже необходимы для смены видимости
+
   const changeMainWall = (value) => {
     setMainWall(value)
     dispatch(changeVisionMainWall({ value }))
@@ -652,7 +634,7 @@ function HomePage() {
     setLeftWall(!value)
     dispatch(changeWallInside({ value, type: 'left' }))
     dispatch(leftVisibleWall({ widthLeftWall: widthLeftWall, heightCloset: heightCloset, value: !value }))
-    dispatch(changeSizeFrame({width:widthCloset,type:'left',value}))
+    dispatch(changeSizeFrame({ width: widthCloset, type: 'left', value }))
 
 
 
@@ -663,7 +645,7 @@ function HomePage() {
     setRightWall(!value)
     dispatch(changeWallInside({ value, type: 'right' }))
     dispatch(rightVisibleWall({ widthRightWall: widthRightWall, widthLeftWall: widthLeftWall, heightCloset: heightCloset, widthCloset: widthCloset, value: !value }))
-    dispatch(changeSizeFrame({width:widthCloset,type:'right',value}))
+    dispatch(changeSizeFrame({ width: widthCloset, type: 'right', value }))
   }
 
   const changeUpVisable = (value) => {
@@ -675,9 +657,6 @@ function HomePage() {
     setDownVisable(value)
     dispatch(changeVisibableDown({ value, height: heightCloset, width: widthCloset }))
   }
-
-
-
 
 
   return (

@@ -164,10 +164,13 @@ const mainRectanglesSlice = createSlice({
    initialState,
    reducers: {
       createVertical(state, action) {
+
          const { xk, yk, shadowid, mainId, widthLeftWall } = action.payload
          const idFrame = id()
          const idShadowFrame = id()
 
+
+         // поиск куда вставлять перегородку(область)
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
@@ -201,7 +204,8 @@ const mainRectanglesSlice = createSlice({
 
          let intersected = false;
 
-         // проверка на пересечение 
+         // проверка что рамка не пересикается с доп элемнтами
+
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newFrame.x, newFrame.y, newFrame.width, newFrame.height, item.x, item.y, item.width, item.height)) {
                intersected = true
@@ -260,6 +264,7 @@ const mainRectanglesSlice = createSlice({
 
 
 
+         // поиск куда вставлять перегородку(область)
          const itemSelect = state.Rectangels.filter(item => ((xk > item.x && xk < (item.x + item.width)) &&
             (yk > item.y && yk < (item.y + item.height))))[0]
 
@@ -292,19 +297,13 @@ const mainRectanglesSlice = createSlice({
             heightShow: FRAME_SIZESHOW,
          }
 
-         // проверка что рамка не пересикается с элемнтов 
+         // проверка что рамка не пересикается с доп элемнтами
 
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newFrame.x, newFrame.y, newFrame.width, newFrame.height, item.x, item.y, item.width, item.height)) {
                intersected = true
             }
          })
-
-
-         // console.log('heightShow 2', itemSelect?.heightShow)
-         // console.log('height', itemSelect?.height)
-         // console.log('heightShow 2', yk)
-
 
          if (!intersected) {
 
@@ -383,6 +382,7 @@ const mainRectanglesSlice = createSlice({
             src: './images/barbell.png',
             x: itemSelect?.x, y: yk, type: 'element', draggable: true, derection: 2
          }
+         // проверка куда ставиться штанга( во всю ширину шкафа или касается края шкафа)
 
          if ((itemSelect.x === widthLeftWall + 5) && (itemSelect.x + itemSelect.width === widthCloset + widthLeftWall - 5)) {
             newElement = {
@@ -414,8 +414,7 @@ const mainRectanglesSlice = createSlice({
             }
          }
 
-
-
+         // проверка на пересечения
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height, newElement.id, item.id)) {
                intersected = true
@@ -475,6 +474,9 @@ const mainRectanglesSlice = createSlice({
             x: itemSelect?.x, y: yk, type: 'drawer', draggable: true, derection: 2
          }
 
+
+
+         // проверка на пересечение
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height, newElement.id, item.id)) {
                intersected = true
@@ -527,6 +529,8 @@ const mainRectanglesSlice = createSlice({
             x: xk, y: itemSelect?.y, type: 'hanger', draggable: true,
          }
 
+         // проверка на пересечение
+
          state.elements.forEach(item => {
             if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height, newElement.id, item.id)) {
                intersected = true
@@ -544,99 +548,6 @@ const mainRectanglesSlice = createSlice({
                state.countHanger = state.countHanger + 1
             }
          }
-
-
-      },
-      createSideHanger(state, action) {
-         const { xk, yk, idd, widthCloset } = action.payload
-
-         const idElement = id()
-         const widthSideHanger = 50
-         const heightSideHanger = 60
-
-         let intersected = false;
-
-         const sortRectangle = state.Rectangels.sort(function (a, b) {
-            if (a.x > b.x) {
-               return 1;
-            }
-            if (a.x < b.x) {
-               return -1;
-            }
-            return 0;
-         });
-
-
-
-         const leftItem = {
-            id: idElement,
-            width: widthSideHanger,
-            height: heightSideHanger,
-            src: './images/burb.webp',
-            x: sortRectangle[0].x, y: yk, type: 'sidehanger', draggable: true,
-         }
-         const rightItem = {
-            id: idElement,
-            width: widthSideHanger,
-            height: heightSideHanger,
-            src: './images/burb.webp',
-            x: sortRectangle[0].x + widthCloset - widthSideHanger - 10, y: yk, type: 'sidehanger', draggable: true,
-         }
-
-
-
-
-
-         const midlex = sortRectangle[0].x + (widthCloset / 2)
-
-         if (xk <= midlex) {
-
-            state.elements.forEach(item => {
-               if (checkPlaneIntersection(leftItem.x, leftItem.y, leftItem.width, leftItem.height, item.x, item.y, item.width, item.height, leftItem.id, item.id)) {
-                  intersected = true
-               }
-            })
-
-            state.Rectangels.filter(item => item.type === 'frame').forEach(item => {
-               if (checkPlaneIntersection(leftItem.x, leftItem.y, leftItem.width, leftItem.height, item.x, item.y, item.width, item.height, leftItem.id, item.id)) {
-                  intersected = true
-               }
-            })
-
-            if (!intersected) {
-               const newElems = [...state.elements.filter(item => item?.id !== idd),
-                  leftItem]
-               state.elements = newElems
-            }
-
-         } else {
-
-            state.elements.forEach(item => {
-               if (checkPlaneIntersection(rightItem.x, rightItem.y, rightItem.width, rightItem.height, item.x, item.y, item.width, item.height, rightItem.id, item.id)) {
-                  intersected = true
-               }
-            })
-
-            state.Rectangels.filter(item => item.type === 'frame').forEach(item => {
-               if (checkPlaneIntersection(rightItem.x, rightItem.y, rightItem.width, rightItem.height, item.x, item.y, item.width, item.height, rightItem.id, item.id)) {
-                  intersected = true
-               }
-            })
-
-
-            if (!intersected) {
-               const newElems = [...state.elements.filter(item => item?.id !== idd),
-                  rightItem
-               ]
-               state.elements = newElems
-            }
-
-
-         }
-
-
-
-
 
 
       },
@@ -686,7 +597,7 @@ const mainRectanglesSlice = createSlice({
          // область поиска в которой ищется все, что нужно удалить
          const searchArea = { x: itemSelect.x + FRAME_SIZE, y: itemSelect.y, width: max.width, height: itemSelect.height }
 
-
+         // прямоугольникик которые надо удалить
          const deleteRec = state.Rectangels.filter(item =>
             item?.x >= searchArea?.x && item?.x < (searchArea?.x + searchArea?.width) &&
             item?.y >= searchArea?.y && item?.y < (searchArea?.y + searchArea?.height))
@@ -782,7 +693,7 @@ const mainRectanglesSlice = createSlice({
          // область поиска в которой ищутся все, что нужно удалить
          const searchArea = { x: itemSelect.x, y: itemSelect.y + itemSelect.height, width: itemSelect.width, height: max.height }
 
-
+         // прямоугольникик которые надо удалить
          const deleteRec = state.Rectangels.filter(item =>
             item?.x >= searchArea?.x && item?.x < (searchArea?.x + searchArea?.width) &&
             item?.y >= searchArea?.y && item?.y < (searchArea?.y + searchArea?.height))
@@ -867,16 +778,19 @@ const mainRectanglesSlice = createSlice({
 
          let { value, containerDiv, wrap, itemSelect, height, heightShow } = action.payload
 
+         // удаление div с input
          containerDiv.removeChild(wrap);
 
-
+         // рамка под вертикальной рамкой размер который мы хотим изменить
          const FrameDown = state.Rectangels.find(item => (
-
             ((item.y) === (itemSelect.y + height))
             &&
             ((item.x < itemSelect.x) && ((item.x + item.width) > (itemSelect.x + itemSelect.width))) && item.type === 'frame'
          )
          )
+
+
+         // тень рамки под вертикальной рамкой размер который мы хотим изменить
          const ShadowFrameDown = state.Rectangels.find(item => (
 
             ((item.y) === (itemSelect.y + height))
@@ -890,13 +804,14 @@ const mainRectanglesSlice = createSlice({
 
          if (FrameDown !== undefined) {
 
+            // все элемнты над рамкой
             const itemsDown = state.Rectangels.filter(item => (
                (item.y === (FrameDown.y + FrameDown.height)) &&
                ((item.x >= FrameDown.x) && ((item.x + item.width) <= (FrameDown.x + FrameDown.width)))
             )
             )
 
-
+            // все элемнты под рамкой
             const itemsUp = state.Rectangels.filter(item => (
                ((item.y + item.height) === FrameDown.y) &&
                ((item.x >= FrameDown.x) && ((item.x + item.width) <= (FrameDown.x + FrameDown.width)))
@@ -904,6 +819,8 @@ const mainRectanglesSlice = createSlice({
             )
 
             let changeValue = value - heightShow
+
+            // поиск минимальной области под рамкой, чтоб не увеличить больше чем можно
 
             const minHeight = itemsDown?.reduce((acc, curr) => acc?.height < curr?.height ? acc : curr).height;
 
@@ -963,11 +880,14 @@ const mainRectanglesSlice = createSlice({
 
          containerDiv.removeChild(wrap);
 
+
+         // рамка справа от рамки которую мы меняем
          const FrameRight = state.Rectangels.find(item => (
             ((item.x) === (itemSelect.x + width)) &&
             ((item.y < itemSelect.y) && ((item.y + item.height) > (itemSelect.y + itemSelect.height))) && item.type === 'frame'
          )
          )
+         // тень рамки справа  от рамки которую мы меняем
          const ShadowFrameRight = state.Rectangels.find(item => (
             ((item.x) === (itemSelect.x + width)) &&
             ((item.y < itemSelect.y) && ((item.y + item.height) > (itemSelect.y + itemSelect.height))) && item.type === 'shadowframe'
@@ -981,18 +901,20 @@ const mainRectanglesSlice = createSlice({
 
          if (FrameRight !== undefined) {
 
+            // прямоугльники справа
             const itemsRightFrame = state.Rectangels.filter(item => (
                (item.x === (FrameRight.x + FrameRight.width)) &&
                ((item.y >= FrameRight.y) && ((item.y + item.height) <= (FrameRight.y + FrameRight.height)))
             )
             )
 
+            // прямоугльники слева
             const itemsLeftFrame = state.Rectangels.filter(item => (
                ((item.x + item.width) === FrameRight.x) &&
                ((item.y >= FrameRight.y) && ((item.y + item.height) <= (FrameRight.y + FrameRight.height)))
             )
             )
-
+            // поиск минимальной области справа от рамки, чтоб не увеличить больше чем можно
             const minWidth = itemsRightFrame?.reduce((acc, curr) => acc?.width < curr?.width ? acc : curr).width;
 
 
@@ -1044,7 +966,7 @@ const mainRectanglesSlice = createSlice({
 
       },
       onBlurInputDrawer(state, action) {
-
+         // функция изменения размеров ящика
          let { value, containerDiv, wrap, itemSelect, height } = action.payload
 
          containerDiv.removeChild(wrap);
@@ -1062,7 +984,7 @@ const mainRectanglesSlice = createSlice({
          }
 
 
-
+         // проверка на пересечение
          state.elements.filter(item => item.id !== itemSelect.id).forEach(item => {
             if (checkPlaneIntersection(newElement.x, newElement.y, newElement.width, newElement.height, item.x, item.y, item.width, item.height)) {
                intersected = true
@@ -1095,6 +1017,9 @@ const mainRectanglesSlice = createSlice({
          const lastItems = state.Rectangels.filter(item =>
             ((item.x + item.width) === ((widthCloset - 5) + widthLeftWall))
          )
+
+
+         // поиск штанги, так как она визуально не касается краев
 
          const lastElements = state.elements.filter(item => {
             if (item?.widthType === 'all') {
@@ -1146,40 +1071,6 @@ const mainRectanglesSlice = createSlice({
             })
 
          } else if (widthClosetChange < minWidth) {
-
-            // if ((widthClosetChange / 5) < lastFrame + 50) {
-
-            //    state.Rectangels = state.Rectangels.map(item => {
-            //       if (lastItems.includes(item)) {
-            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
-            //       } else {
-            //          return item
-            //       }
-            //    })
-            //    state.elements = state.elements.map(item => {
-            //       if (lastElements.includes(item)) {
-            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
-            //       } else {
-            //          return item
-            //       }
-            //    })
-            //    state.mainBackRectangles = state.mainBackRectangles.map(item => {
-            //       if (item?.changeType === 'up' || item?.changeType === 'down') {
-            //          item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
-            //          item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
-            //          return item
-            //       } else if (item?.changeType === 'right') {
-            //          item.points[0] = item.points[0] + ((lastFrame + 50) - widthCloset)
-            //          item.points[2] = item.points[2] + ((lastFrame + 50) - widthCloset)
-            //          item.points[4] = item.points[4] + ((lastFrame + 50) - widthCloset)
-            //          item.points[6] = item.points[6] + ((lastFrame + 50) - widthCloset)
-            //          return item
-            //       } {
-            //          return { ...item, width: item.width + ((lastFrame + 50) - widthCloset) }
-            //       }
-            //    })
-
-            // } else {
 
             state.Rectangels = state.Rectangels.map(item => {
                if (lastItems.includes(item)) {
@@ -1289,11 +1180,14 @@ const mainRectanglesSlice = createSlice({
       },
       changeSizeHeightMain(state, action) {
 
-         const { heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame } = action.payload
+         const { heightCloset, heightClosetChange, maxHeight, minHeight, lastFrame, downVisible } = action.payload
 
+         // проверка есть дно или нет
+
+         const downPoint = downVisible ? heightCloset - 19.2 : heightCloset
 
          const lastItems = state.Rectangels.filter(item =>
-            ((item?.y + item.height) === heightCloset - 5)
+            ((item?.y + item.height) === downPoint)
          )
 
 
@@ -1302,7 +1196,7 @@ const mainRectanglesSlice = createSlice({
 
             state.Rectangels = state.Rectangels.map(item => {
                if (lastItems.includes(item)) {
-                  return { ...item, height: item.height + (600 - heightCloset) }
+                  return { ...item, height: item.height + (maxHeight - heightCloset) }
                } else {
                   return item
                }
@@ -1456,16 +1350,16 @@ const mainRectanglesSlice = createSlice({
          }
       },
       changeHorizontalFrames(state, action) {
-
+         // функции для смены расстояния горизонтальных рамок через фрагмент Metrics
          const { itemSelect, changeValue } = action.payload
 
-
+         // элементы над рамкой
          const itemsDown = state.Rectangels.filter(item => (
             (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
             (item.y === (itemSelect.y + itemSelect.height))
          )
          )
-
+         // элементы под рамкой
          const itemsUp = state.Rectangels.filter(item => (
             (item.x >= itemSelect.x && ((item.x + item.width) <= (itemSelect.x + itemSelect.width))) &&
             ((item.y + item.height) === itemSelect.y)
@@ -1508,16 +1402,16 @@ const mainRectanglesSlice = createSlice({
 
       },
       changeVerticalFrames(state, action) {
-
+         // функции для смены расстояния вертикальных рамок через фрагмент Metrics
          const { itemSelect, changeValue, widthLeftWall } = action.payload
 
-
+         // элементы слева от рамки
          const itemsLeft = state.Rectangels.filter(item => (
             (item.y >= itemSelect.y && ((item.y + item.height) <= (itemSelect.y + itemSelect.height))) &&
             ((item.x + item.width) === (itemSelect.x + widthLeftWall))
          )
          )
-
+         // элементы справа от рамки
          const itemsRight = state.Rectangels.filter(item => (
             (item.y >= itemSelect.y && ((item.y + item.height) <= (itemSelect.y + itemSelect.height))) &&
             (item.x === ((itemSelect.x + widthLeftWall) + itemSelect.width))
@@ -1865,7 +1759,7 @@ const mainRectanglesSlice = createSlice({
 
          const { value, height, width } = action.payload
 
-         // 105 это начала по x у шкафа, 5 пикселей рамка, 100, левая "стенка"
+         // 105 это начала по x у шкафа, 5 пикселей рамка, 100, левая "стенка" 19.2 это 96мм ( дно)
 
          const downPoint = !value ? height - 19.2 : height
 
@@ -2042,7 +1936,7 @@ export const { createVertical, createHorizontal, createNewBurb,
    changeColorMain, changeVisionMainWall,
    changeTextureMain,
    changeSizeMainWall, DragStarElement,
-   createHanger, createSideHanger,
+   createHanger,
    DragStartHanger, deleteElement,
    createDrawer, onBlurInputDrawer,
    changeWallInside, changeVisibableUp,

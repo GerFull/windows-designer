@@ -1,6 +1,4 @@
-import ReactPDF, { PDFViewer, Document, Page, StyleSheet, Text, image, Image, View, Font } from '@react-pdf/renderer'
-import { Stage, Layer, Group, Rect } from "react-konva";
-import React, { useEffect, useState } from 'react'
+import  {Document, Page, StyleSheet, Text, Image, View, Font } from '@react-pdf/renderer'
 
 
 function PdfFile(props) {

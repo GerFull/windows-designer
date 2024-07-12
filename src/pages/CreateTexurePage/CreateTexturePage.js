@@ -6,7 +6,6 @@ import style from './CreateTexturePage.module.scss'
 
 function CreateTexturePage() {
 
-   const { id } = useParams()
    const navigate = useNavigate()
 
    const [file, setFile] = useState(null);
